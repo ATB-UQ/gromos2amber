@@ -1,6 +1,3 @@
-from inspect import getmembers, ismethod
-from fortranformat import FortranRecordWriter as FortranWriter
-from AmberTopologySections import AmberTopologySections, NOCOMMENT
 from GromosTopologyParser import GromosTopologyParser
 
 KILOJOULE = 1.0/4.184 # kCal
@@ -12,9 +9,9 @@ class Topology:
     # _wH := with hydrogen
     # _woH := without hydrogen
 
-    def __init__(self, io):
-
+    def __init__(self, io, configuration):
         gromos = GromosTopologyParser(io)
+        numatoms = len(configuration.positions)
 
         self.title = gromos.TITLE()
 
@@ -28,7 +25,7 @@ class Topology:
         self.dihedral_types = _read_dihedral_types(gromos)
         self.improper_types = _read_improper_types(gromos)
 
-        ri = _read_interaction
+        ri = _read_bonded_interaction
         self.bonds_woH     = ri(gromos.BOND(H=False))
         self.angles_woH    = ri(gromos.BONDANGLE(H=False))
         self.dihedrals_woH = ri(gromos.DIHEDRAL(H=False))
@@ -41,27 +38,10 @@ class Topology:
 
         self.is_periodic = True
 
-    def write_amber(self, io):
-        section_functions = [ member
-                            for member in getmembers(AmberTopologySections,
-                                                     predicate=ismethod)
-                            if member[0] != "__init__" ]
-        sections = []
-        ordering = []
+        numsolvent = numatoms - len(self.atoms)
+        solvent_atoms, atomspersolvent = _read_solvent(gromos, numsolvent)
 
-        amber_sections = AmberTopologySections(self)
-
-        for title,func in section_functions:
-            values, format_string, comment, order = func(amber_sections)
-            sections.append( section(title, comment, format_string, values) )
-            ordering.append( order )
-
-        io.write("%VERSION  VERSION_STAMP = V0001.000\n")
-
-        for order, sec in sorted(zip(ordering, sections)):
-            io.write(sec)
-
-    def get_title(): return self.title
+    def get_title(self): return self.title.replace('\n','_')
 
 
 ##### End of Topology class #####
@@ -93,7 +73,10 @@ def _read_atoms_and_residues(gromos):
 
 def _read_atom_types(gromos):
     names = gromos.ATOMTYPENAME()
-    return names
+    # Amber limits type names to 2 characters.
+    # Use typecode instead when this is violated
+    return [ str(i+1) if len(name.strip())>2 else name.strip()
+             for i,name in enumerate(names) ]
 
 def _read_bond_types(gromos):
     _,spring,length = gromos.BONDSTRETCHTYPE()
@@ -122,7 +105,7 @@ def _read_improper_types(gromos):
                 for k,xi0 in zip(spring, angle) ]
 
 # processes bond, angle, dihedral, improper columns from gromos parser
-def _read_interaction(gromos_columns):
+def _read_bonded_interaction(gromos_columns):
     cols = gromos_columns
     numcols = len(gromos_columns) - 1
     numrows = len(gromos_columns[0])
@@ -141,11 +124,21 @@ def _read_lj_pair_types(gromos):
     return [ LJPairType(typei[i]-1, typej[i]-1, c12[i]*unit12, c6[i]*unit6,
                         c12_14[i]*unit12, c6_14[i]*unit6)
                 for i in range(numpairs)
-            ]
-def _read_residues(gromos):
-    return gromos.RESNAMES()
+                ]
 
-    
+def _read_solvent(gromos, numsolvent):
+    _,name,typecode,mass,charge = gromos.SOLVENTATOM()
+    numatoms = len(name)
+    atoms = [ Atom(name[i%numatoms],
+                        typecode[i%numatoms]-1, 
+                        mass[i%numatoms],
+                        charge[i%numatoms],
+                        [],
+                        [])
+                    for i in range(numsolvent) ]
+    return atoms, numatoms
+
+
 
 class Atom:
     def __init__(self, name, typecode, mass, charge, exclusions, neigh14):
@@ -195,19 +188,3 @@ class ImproperType:
 class Residue:
     def __init__(self, name, first, numatoms):
         self.name, self.first, self.numatoms = name, first, numatoms
-
-def section(title, comment, format_string, values):
-    header = section_header(title, comment, format_string)
-    body = section_body(values, format_string)
-    return header+body
-
-def section_header(title, comment, format_string):
-    flag = "%FLAG {}\n".format(title)
-    nocomment = comment == NOCOMMENT
-    nocomment = True
-    com = "" if nocomment else "%COMMENT {}\n".format(title)
-    fmt = "%FORMAT({})\n".format(format_string)
-    return flag + com + fmt
-
-def section_body(values, format_string):
-    return FortranWriter(format_string).write(values) + '\n'

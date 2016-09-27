@@ -2,18 +2,28 @@
 
 import sys
 from lib.Topology import Topology
+from lib.Configuration import Configuration
+from lib.AmberTopologyWriter import AmberTopologyWriter
+from lib.AmberConfigurationWriter import AmberConfigurationWriter
 
 helpstring = "help\n"
-if len(sys.argv) > 1:
+if len(sys.argv) != 5:
     sys.stderr.write(helpstring)
     exit(1)
 
-gromos_in = sys.stdin
-amber_out = sys.stdout
+gromos_topology_filename = sys.argv[1]
+gromos_configuration_filename = sys.argv[2]
+amber_topology_filename = sys.argv[3]
+amber_configuration_filename = sys.argv[4]
 
-topology = Topology(gromos_in)
+with open(gromos_configuration_filename) as f: config = Configuration(f)
+with open(gromos_topology_filename) as f: topology = Topology(f, config)
 
-topology.write_amber(amber_out)
+with open(amber_topology_filename, "w") as f:
+    AmberTopologyWriter(topology).write(f)
+
+with open(amber_configuration_filename, "w") as f:
+    AmberConfigurationWriter(config).write(f)
 
 exit(0)
 

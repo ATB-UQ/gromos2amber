@@ -20,26 +20,49 @@ eg "TITLE"), the amber_sections.NOCOMMENT is returned as the comment.
 # import all the amber_helpers functions, as inspect will then treat them as
 # though they are part of amber_sections.py.
 
+from fortranformat import FortranRecordWriter as FortranWriter
+from inspect import getmembers, ismethod
+
 # Constants
 NOCOMMENT = "" # comment when no comment required
 NOTERMS = "This section intentionally left empty."
 LINEWIDTH = 80
 
-class AmberTopologySections:
+class AmberTopologyWriter:
+
     def __init__(self, topology):
         self.topology = topology
 
+    def write(self, io):
+        not_sections = ["write", "__init__"]
+        section_functions = [ member
+                            for member in getmembers(self,
+                                                     predicate=ismethod)
+                            if not member[0] in not_sections]
+        sections = []
+        ordering = []
+
+        for title,func in section_functions:
+            values, format_string, comment, order = func()
+            sections.append( _section(title, comment, format_string, values) )
+            ordering.append( order )
+
+        io.write("%VERSION  VERSION_STAMP = V0001.000\n")
+
+        for order, sec in sorted(zip(ordering, sections)):
+            io.write(sec)
+
     def CTITLE(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = NOCOMMENT
         order = 0
-        title = self.topology.title
+        title = self.topology.get_title()
         title = title + " "*(LINEWIDTH - len(title))
         values = [title[i:i+4] for i in range(0, LINEWIDTH, 4)]
         return values, format_string, comment, order
     
     def FORCE_FIELD_TYPE(self):
-        format_string ='i2,a78'
+        format_string ='I2,A78'
         comment = 'comment'
         order = 50
         values = [1, "CHARMM force field: No FF information parsed..."]
@@ -91,7 +114,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def ATOM_NAME(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 200
         values = [ atom.name for atom in self.topology.atoms ]
@@ -106,7 +129,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def ATOMIC_NUMBER(self):
-        format_string = '10i8'
+        format_string = '10I8'
         comment = NOCOMMENT
         order = 400
         values = [ 1000+i for i,a in enumerate(self.topology.atoms) ]
@@ -127,7 +150,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def NUMBER_EXCLUDED_ATOMS(self):
-        format_string = '10i8'
+        format_string = '10I8'
         comment = NOCOMMENT
         order = 700
         values = [ len(atom.exclusions) for atom in self.topology.atoms ]
@@ -143,7 +166,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def RESIDUE_LABEL(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 900
         values = [ residue.name for residue in self.topology.residues ]
@@ -209,7 +232,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def SCEE_SCALE_FACTOR(self):
-        format_string = '5e16.8'
+        format_string = '5E16.8'
         comment = 'comment'
         order = 1800
         values = [ 0.0 if dihedral.is_excluding_14() else 1.0
@@ -217,7 +240,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def SCNB_SCALE_FACTOR(self):
-        format_string = '5e16.8'
+        format_string = '5E16.8'
         comment = 'comment'
         order = 1900
         values = [ 0.0 if dihedral.is_excluding_14() else 1.0
@@ -225,7 +248,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def SOLTY(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = NOCOMMENT
         order = 2000
         values = []
@@ -296,35 +319,35 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def HBOND_ACOEF(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 3000
         values = []
         return values, format_string, comment, order
     
     def HBOND_BCOEF(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 3200
         values = []
         return values, format_string, comment, order
     
     def HBCUT(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 3300
         values = []
         return values, format_string, comment, order
     
     def AMBER_ATOM_TYPE(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 3400
         values = [ atomtype for atomtype in self.topology.atom_types ]
         return values, format_string, comment, order
     
     def TREE_CHAIN_CLASSIFICATION(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'All items BLA in Chamber self.topology'
         order = 3500
         values = [ 'BLA' for atom in self.topology.atoms ]
@@ -346,7 +369,7 @@ class AmberTopologySections:
     
     
     def CHARMM_UREY_BRADLEY_COUNT(self):
-        format_string = '2i8'
+        format_string = '2I8'
         comment = NOCOMMENT
         order = 3800
         values = [0,0]
@@ -360,21 +383,21 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def CHARMM_UREY_BRADLEY_FORCE_CONSTANT(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 4000
         values = []
         return values, format_string, comment, order
     
     def CHARMM_UREY_BRADLEY_EQUIL_VALUE(self):
-        format_string = '20a4'
+        format_string = '20A4'
         comment = 'comment'
         order = 4100
         values = []
         return values, format_string, comment, order
     
     def CHARMM_NUM_IMPROPERS(self):
-        format_string = 'i8'
+        format_string = 'I8'
         comment = NOCOMMENT
         order = 4200
         values = [ len(self.topology.impropers_woH)
@@ -382,7 +405,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def CHARMM_IMPROPERS(self):
-        format_string = "10i8"
+        format_string = "10I8"
         comment = 'comment'
         order = 4300
         impropers = list(self.topology.impropers_wH)
@@ -391,7 +414,7 @@ class AmberTopologySections:
         return values, format_string, comment, order
     
     def CHARMM_NUM_IMPR_TYPES(self):
-        format_string = 'i8'
+        format_string = 'I8'
         comment = NOCOMMENT
         order = 4400
         values = [ len( self.topology.improper_types ), ]
@@ -447,3 +470,19 @@ def _nb_parm_index(i, j):
     if not type(j): throw(Exception("j must be int"))
     i,j = (i,j) if i<=j else (j,i) # enforce i <= j
     return j*(j-1)/2 + i
+
+def _section(title, comment, format_string, values):
+    header = _section_header(title, comment, format_string)
+    body = _section_body(values, format_string)
+    return header+body
+
+def _section_header(title, comment, format_string):
+    flag = "%FLAG {}\n".format(title)
+    nocomment = comment == NOCOMMENT
+    nocomment = True
+    com = "" if nocomment else "%COMMENT {}\n".format(title)
+    fmt = "%FORMAT({})\n".format(format_string)
+    return flag + com + fmt
+
+def _section_body(values, format_string):
+    return FortranWriter(format_string).write(values) + '\n'

@@ -1,3 +1,4 @@
+from gromos_format import parse_simple_columns, parse_array_block
 
 class GromosTopologyParser:
 
@@ -129,34 +130,5 @@ class GromosTopologyParser:
     def LJEXCEPTIONS(self):
         block = self.blocks["LJEXCEPTIONS"]
         return parse_simple_columns(block, [5,5,14,14], [int,int,float,float] )
-
-
-    
-def parse_simple_columns(block, widths, types):
-    nrows = int(block[1])
-    ncols = len(widths)
-    #check format is consistent with expectations
-    if ncols != len(types):
-        raise Exception("number of field widths not equal to number of types")
-    line_width = sum(widths)+1 #includes newline
-    for r in range(nrows):
-        if len(block[r+2]) != line_width:
-            msg = "line {} of block {} is wrong length: \"{}\""
-            raise Exception(msg.format(r+2, block[1].strip(), block[r+2]))
-    # read columns into lists
-    bounds = [ (sum(widths[0:i]) , sum(widths[0:i+1]))
-                for i in range(len(widths)) ]
-    return [
-      [ types[c](block[i+2][bounds[c][0]:bounds[c][1]]) for i in range(nrows) ]
-      for c in range(ncols)
-    ]
-
-def parse_array_block(block, width, typ):
-    n = int(block[1])
-    line = ''.join(block[2:]).replace('\n','')
-    if len(line) != n*width:
-        raise Exception("Could not parse {}".format(block[0]))
-    return [ typ(line[i*n:(i+1)*n]) for i in range(n)]
-
 
 
