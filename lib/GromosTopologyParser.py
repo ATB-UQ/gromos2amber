@@ -120,7 +120,7 @@ class GromosTopologyParser:
                                     [int,int,float,float,float,float])
     def SOLUTEMOLECULES(self):
         block = self.blocks["SOLUTEMOLECULES"]
-        parse_array_block(block, 6, int)
+        return parse_array_block(block, 6, int)
 
     def SOLVENTATOM(self):
         block = self.blocks["SOLVENTATOM"]
