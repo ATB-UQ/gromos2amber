@@ -464,7 +464,8 @@ class AmberTopologyWriter:
         return values, format_string, comment, order
      
 # for bonds, angles, and dihedrals, but not chamber impropers
-def _amber_index(index): return 3*(index-1)
+def _amber_index(index):
+    return 3*(index-1) if index>0 else -3*(-index-1)
 
 def _get_amber_indices(interactions, impropers = False):
     values = []
