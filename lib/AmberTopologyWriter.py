@@ -341,12 +341,13 @@ class AmberTopologyWriter:
         format_string = '20A4'
         comment = 'comment'
         order = 3400
-        values = [ atomtype for atomtype in self.topology.atom_types ]
+        atomtypes = self.topology.atom_types
+        values = [ atomtypes[atom.typecode] for atom in self.topology.atoms ]
         return values, format_string, comment, order
     
     def TREE_CHAIN_CLASSIFICATION(self):
         format_string = '20A4'
-        comment = 'All items BLA in Chamber self.topology'
+        comment = 'All items BLA in Chamber topology'
         order = 3500
         values = [ 'BLA' for atom in self.topology.atoms ]
         return values, format_string, comment, order
