@@ -367,6 +367,22 @@ class AmberTopologyWriter:
         values = [ 0 for atom in self.topology.atoms ]
         return values, format_string, comment, order
     
+    def SOLVENT_POINTERS(self):
+        format_string = '3I8'
+        comment = 'comment'
+        order = 3730
+        values = [ self.topology.num_solute_residues,
+                   len(self.topology.atoms_per_molecule),
+                   self.topology.num_solute_molecules+1
+                   ]
+        return values, format_string, comment, order
+
+    def ATOMS_PER_MOLECULE(self):
+        format_string = '10I8'
+        comment = 'comment'
+        order = 3730
+        values = [ numatoms for numatoms in self.topology.atoms_per_molecule ]
+        return values, format_string, comment, order
     
     def CHARMM_UREY_BRADLEY_COUNT(self):
         format_string = '2I8'
@@ -458,7 +474,7 @@ def _get_amber_indices(interactions, impropers = False):
             index = atom_index+1
             index = index if impropers else _amber_index(index)
             values.append(index)
-        values.append(interaction.typ+1)
+        values.append(interaction.typecode+1)
     return values
 
 def _nb_parm_index(i, j):

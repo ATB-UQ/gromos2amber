@@ -38,11 +38,27 @@ class Topology:
 
         self.is_periodic = True
 
-        numsolvent = numatoms - len(self.atoms)
-        solvent_atoms, atomspersolvent = _read_solvent(gromos, numsolvent)
+        num_solute_atoms = len(self.atoms)
+        atoms_per_solute = _read_atoms_per_solute_molecule(gromos)
+        self.num_solute_molecules = len(atoms_per_solute)
+        numsolvent = numatoms - num_solute_atoms
+        solvent_atoms, atoms_per_solvent = _read_solvent(gromos, numsolvent)
+        num_solvent_molecules = int(len(solvent_atoms)/atoms_per_solvent)
+
+        self.atoms_per_molecule = list(atoms_per_solute)
+        self.atoms_per_molecule.extend([atoms_per_solvent
+                                        for i in range(num_solvent_molecules)])
+
+        self.num_solute_residues = len(self.residues)
+        nsr = self.num_solute_residues
+        self.residues.extend([ Residue("SOLV",
+                                       i%atoms_per_solvent + nsr,
+                                       atoms_per_solvent)
+                                for i in range(num_solvent_molecules) ])
+
+        self.atoms.extend(solvent_atoms)
 
     def get_title(self): return self.title.replace('\n','_')
-
 
 ##### End of Topology class #####
 
@@ -109,7 +125,8 @@ def _read_bonded_interaction(gromos_columns):
     cols = gromos_columns
     numcols = len(gromos_columns) - 1
     numrows = len(gromos_columns[0])
-    return [ Interaction([ cols[c][r]-1 for c in range(numcols) ], cols[-1][r])
+    return [ Interaction([ cols[c][r]-1 for c in range(numcols) ],
+                         cols[-1][r]-1 )
             for r in range(numrows)
             ]
 
@@ -138,6 +155,12 @@ def _read_solvent(gromos, numsolvent):
                     for i in range(numsolvent) ]
     return atoms, numatoms
 
+def _read_atoms_per_solute_molecule(gromos):
+    mol_last_index = gromos.SOLUTEMOLECULES()
+    nummol = len(mol_last_index)
+    return [ mol_last_index[i] - sum(mol_last_index[0:i])
+            for i in range(nummol) ]
+
 
 
 class Atom:
@@ -154,9 +177,9 @@ class Atom:
 
 class Interaction:
     """ Bond, angle, proper dihedral, or improper dihedral """
-    def __init__(self, atoms, typ):
+    def __init__(self, atoms, typecode):
         self.atoms = atoms
-        self.typ = typ
+        self.typecode = typecode
 
 class BondType:
     def __init__(self, k, r0):
