@@ -41,7 +41,8 @@ def parse_simple_columns(block, widths, types, header = True):
 
 def parse_array_block(block, width, typ):
     n = int(block[1])
-    line = ''.join(block[2:]).replace('\n','')
+    line = ''.join(block[2:-1]).replace('\n','')
     if len(line) != n*width:
-        raise Exception("Could not parse {}".format(block[0]))
-    return [ typ(line[i*n:(i+1)*n]) for i in range(n)]
+        msg = "Could not parse block:\n{}"
+        raise Exception(msg.format(''.join(block)))
+    return [ typ(line[i*width:(i+1)*width]) for i in range(n)]
