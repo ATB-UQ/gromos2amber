@@ -235,16 +235,14 @@ class AmberTopologyWriter:
         format_string = '5E16.8'
         comment = 'comment'
         order = 1800
-        values = [ 0.0 if dihedral.is_excluding_14() else 1.0
-                    for dihedral in self.topology.dihedral_types ]
+        values = [ 1.0 for dihedral in self.topology.dihedral_types ]
         return values, format_string, comment, order
     
     def SCNB_SCALE_FACTOR(self):
         format_string = '5E16.8'
         comment = 'comment'
         order = 1900
-        values = [ 0.0 if dihedral.is_excluding_14() else 1.0
-                    for dihedral in self.topology.dihedral_types ]
+        values = [ 1.0 for dihedral in self.topology.dihedral_types ]
         return values, format_string, comment, order
     
     def SOLTY(self):
@@ -470,7 +468,11 @@ def _amber_index(index): return 3*(index-1)
 def _get_amber_indices(interactions, impropers = False):
     values = []
     for interaction in interactions:
-        for atom_index in interaction.atoms:
+        atoms = interaction.atoms
+        if interaction.is_excluding_14():
+            atoms = list(atoms) # avoid mutating original
+            atoms[2] *= -1
+        for atom_index in atoms:
             index = atom_index+1
             index = index if impropers else _amber_index(index)
             values.append(index)
@@ -502,3 +504,4 @@ def _section_header(title, comment, format_string):
 
 def _section_body(values, format_string):
     return FortranWriter(format_string).write(values) + '\n'
+

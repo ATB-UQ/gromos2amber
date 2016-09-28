@@ -25,6 +25,8 @@ class Topology:
         self.dihedral_types = _read_dihedral_types(gromos)
         self.improper_types = _read_improper_types(gromos)
 
+        self.dihedral_types.append(DihedralType(0.0,0.0,0.0)) #dummy for 1-4
+
         ri = _read_bonded_interaction
         self.bonds_woH     = ri(gromos.BOND(H=False))
         self.angles_woH    = ri(gromos.BONDANGLE(H=False))
@@ -35,7 +37,14 @@ class Topology:
         self.angles_wH    = ri(gromos.BONDANGLE(H=True))
         self.dihedrals_wH = ri(gromos.DIHEDRAL(H=True))
         self.impropers_wH = ri(gromos.IMPDIHEDRAL(H=True))
-
+        # Marks dihedrals for which 1-4 interactions must be excluded
+        _fix_14_exclusions(self.atoms, self.dihedrals_wH)
+        _fix_14_exclusions(self.atoms, self.dihedrals_woH)
+        # Add dummy dihedrals to force 1-4 interactions where required
+        self.dihedrals_woH.extend(_extra_dihedrals(self.atoms,
+                                                   self.dihedrals_wH,
+                                                   self.dihedrals_woH,
+                                                   len(self.dihedral_types)-1))
         self.is_periodic = True
 
         num_solute_atoms = len(self.atoms)
@@ -57,6 +66,7 @@ class Topology:
                                 for i in range(num_solvent_molecules) ])
 
         self.atoms.extend(solvent_atoms)
+
 
     def get_title(self): return self.title.replace('\n','_')
 
@@ -161,7 +171,29 @@ def _read_atoms_per_solute_molecule(gromos):
     return [ mol_last_index[i] - sum(mol_last_index[0:i])
             for i in range(nummol) ]
 
+def _extra_dihedrals(atoms, dihedrals_wH, dihedrals_woH, dummy_typecode):
+    extra = []
+    all_dihedrals = list(dihedrals_wH)
+    all_dihedrals.extend(dihedrals_woH)
+    for i,atom in enumerate(atoms):
+        for l in atom.neigh14:
+            found = False
+            for dihedral in all_dihedrals:
+                di, dl = dihedral.atoms[0], dihedral.atoms[3]
+                di, dl = (di,dl) if di<dl else (dl,di)
+                if di == i and dl == l:
+                    found = True
+                    break
+            if not found:
+                extra.append(Dihedral([i,i,l,l],dummy_typecode))
+    return extra
 
+def _fix_14_exclusions(atoms, dihedrals):
+    for dihedral in dihedrals:
+        di, dl = dihedral.atoms[0], dihedral.atoms[3]
+        di, dl = (di,dl) if di<dl else (dl,di)
+        if dl in atoms[di].exclusions_wo14:
+            dihedral.exclude_14()
 
 class Atom:
     def __init__(self, name, typecode, mass, charge, exclusions, neigh14):
@@ -169,17 +201,26 @@ class Atom:
         self.typecode = typecode
         self.mass = mass
         self.charge = charge
-        self.exclusions = exclusions
         self.neigh14 = neigh14
-
-    def add_exclusion(self, exclusion):
-        self.exclusions.append(exclusion)
+        self.exclusions_wo14 = exclusions
+        all_exclusions = list(exclusions)
+        all_exclusions.extend(neigh14)
+        self.exclusions = sorted(set(all_exclusions))
 
 class Interaction:
     """ Bond, angle, proper dihedral, or improper dihedral """
     def __init__(self, atoms, typecode):
         self.atoms = atoms
         self.typecode = typecode
+        self._exclude14 = False
+        if len(atoms)==4 and (atoms[2] == 1 or atoms[3] == 1):
+            self.atoms.reverse()
+
+    def exclude_14(self, exclude = True):
+        if len(self.atoms) != 4: raise Exception("not a dihedral")
+        self._exclude14 = exclude
+
+    def is_excluding_14(self): return self._exclude14
 
 class BondType:
     def __init__(self, k, r0):
@@ -197,12 +238,6 @@ class AngleType:
 class DihedralType:
     def __init__(self, k, phi0, n):
         self.k, self.phi0, self.n = k, phi0, n
-        self._exclude14 = False
-
-    def exclude_14(self, exclude = True):
-        self._exclude14 = exclude
-
-    def is_excluding_14(self): return self._exclude14
 
 class ImproperType:
     def __init__(self, k, xi0):
