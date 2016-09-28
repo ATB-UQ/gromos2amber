@@ -17,3 +17,6 @@ class AmberConfigurationWriter:
             values = [ round(co, 3) for pos in values ]
         io.write(FortranWriter("6F12.7").write(values))
         io.write('\n')
+        io.write(FortranWriter("6F12.7").write(self.configuration.box_size))
+        io.write('\n')
+

@@ -12,4 +12,7 @@ class Configuration:
                                             header = False)
         self.positions = [ [xi*nm,yi*nm,zi*nm] for xi,yi,zi in zip(x,y,z) ]
 
+        block = blocks["GENBOX"]
+        self.box_size = [ float(x)*nm for x in block[2].split() ]
+
 
