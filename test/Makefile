@@ -1,5 +1,5 @@
 
-TEST_CASES := 1177_H2O 1177_H2O_melt
+TEST_CASES := 1177_H2O 1177_H2O_liquid
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.parm7)
 MDINFOS := $(foreach X,$(TEST_CASES),temp/$X.mdinfo)
 GLOGS := $(foreach X,$(TEST_CASES),temp/$X.log)
