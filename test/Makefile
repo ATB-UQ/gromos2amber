@@ -18,6 +18,18 @@ temp :
 temp/% : % | temp
 	cp $< $@ 
 
+temp/%_vacuum.amber.in : vacuum.amber.in
+	cp $< $@
+
+temp/%_liquid.amber.in : liquid.amber.in
+	cp $< $@
+
+temp/%_vacuum.gromos.imd : vacuum.gromos.imd
+	cp $< $@
+
+temp/%_liquid.gromos.imd : liquid.gromos.imd
+	cp $< $@
+
 temp/%.amber.prmtop : $(GROMOS2AMBER) temp/%.gromos.top temp/%.gromos.cnf
 	./$< temp/$*.gromos.top temp/$*.gromos.cnf \
 		temp/$*.amber.prmtop temp/$*.amber.inpcrd
