@@ -444,7 +444,7 @@ class AmberTopologyWriter:
         format_string = '5E16.8'
         comment = NOCOMMENT
         order = 4500
-        values = [ improper.k for improper in self.topology.improper_types ]
+        values = [ 0.5*improper.k for improper in self.topology.improper_types ]
         return values, format_string, comment, order
     
     def CHARMM_IMPROPER_PHASE(self):
