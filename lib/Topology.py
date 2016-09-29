@@ -67,8 +67,7 @@ class Topology:
 
         self.atoms.extend(solvent_atoms)
 
-        _bonds_over_boundaries(self.bonds_wH, self.bonds_woH,
-                                                 configuration)
+        _fix_bonds_over_boundaries(configuration, self.bonds_wH, self.bonds_woH)
 
     def get_title(self): return self.title.replace('\n','_')
 
@@ -197,28 +196,24 @@ def _fix_14_exclusions(atoms, dihedrals):
         if dl in atoms[di].exclusions_wo14:
             dihedral.exclude_14()
 
-
-def _bonds_over_boundaries(bonds_wH, bonds_woH, configuration):
+def _fix_bonds_over_boundaries(configuration, *bond_lists):
     x = configuration.positions
     box = configuration.box_size
-    broken_bonds = []
-    allbonds = list(bonds_woH)
-    allbonds.extend(bonds_wH)
     if sum(box) == 0:
         return []
     num_broken_bond_dims = 1
     while num_broken_bond_dims > 0:
         num_broken_bond_dims = 0
-        for bond in allbonds:
-            i,j = bond.atoms
-            for d in range(2):
-                if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
-                    num_broken_bond_dims += 1
-                    if x[i][d] > x[j][d]
-                        x[j][d] += box[d]
-                    else:
-                        x[i][d] += box[d]
-
+        for bonds in bond_lists:
+            for bond in bonds:
+                i,j = bond.atoms
+                for d in range(3):
+                    if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
+                        num_broken_bond_dims += 1
+                        if x[i][d] > x[j][d]:
+                            x[j][d] += box[d]
+                        else:
+                            x[i][d] += box[d]
 
 class Atom:
     def __init__(self, name, typecode, mass, charge, exclusions, neigh14):
