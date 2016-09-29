@@ -67,15 +67,8 @@ class Topology:
 
         self.atoms.extend(solvent_atoms)
 
-        broken_bonds = _bonds_over_boundaries(self.bonds_wH, self.bonds_woH,
+        _bonds_over_boundaries(self.bonds_wH, self.bonds_woH,
                                                  configuration)
-        if len(broken_bonds) > 0:
-            print("Found {} bonds extending over boundaries:".format(
-                                                            len(broken_bonds)))
-            for bond in broken_bonds:
-                print("{}--{}".format(bond.atoms[0], bond.atoms[1]))
-            raise Exception("broken bonds")
-
 
     def get_title(self): return self.title.replace('\n','_')
 
@@ -213,15 +206,18 @@ def _bonds_over_boundaries(bonds_wH, bonds_woH, configuration):
     allbonds.extend(bonds_wH)
     if sum(box) == 0:
         return []
-    for bond in allbonds:
-        i,j = bond.atoms
-        for d in range(2):
-            if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
-                broken_bonds.append(bond)
-
-                break
-    return broken_bonds
-
+    num_broken_bond_dims = 1
+    while num_broken_bond_dims > 0:
+        num_broken_bond_dims = 0
+        for bond in allbonds:
+            i,j = bond.atoms
+            for d in range(2):
+                if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
+                    num_broken_bond_dims += 1
+                    if x[i][d] > x[j][d]
+                        x[j][d] += box[d]
+                    else:
+                        x[i][d] += box[d]
 
 
 class Atom:
