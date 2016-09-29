@@ -6,6 +6,3 @@ Calculate energies only
   cut=14, ntb=0, igb=0,
   ntt=0
  &end
- &ewald
-  verbose=4
- &end
