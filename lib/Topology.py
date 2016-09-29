@@ -67,11 +67,24 @@ class Topology:
 
         self.atoms.extend(solvent_atoms)
 
+        self.solvent_bonds = _make_solvent_bonds(atoms_per_solvent,
+                                                 len(solvent_atoms),
+                                                 num_solute_atoms)
+
         _fix_bonds_over_boundaries(configuration, self.bonds_wH, self.bonds_woH)
 
     def get_title(self): return self.title.replace('\n','_')
 
 ##### End of Topology class #####
+
+def _make_solvent_bonds(atoms_per_solvent, num_solvent_atoms,
+                                            first_solvent_index):
+    solvent_bonds = []
+    for i in range(int(num_solvent_atoms/atoms_per_solvent)):
+        for j in range(i+1,i+atoms_per_solvent):
+            solvent_bonds.append(Interaction([i,j],-1))
+    return solvent_bonds
+
 
 
 def _read_atoms_and_residues(gromos):
