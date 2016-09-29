@@ -5,10 +5,11 @@ MDINFOS := $(foreach X,$(TEST_CASES),temp/$X.amber.mdinfo)
 GLOGS := $(foreach X,$(TEST_CASES),temp/$X.gromos.log)
 YAML := $(foreach X,$(TEST_CASES),temp/$X.gromos.yml) \
     $(foreach X,$(TEST_CASES),temp/$X.amber.yml)
+COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
 
 .PHONY : test
-test : $(PRMTOPS) $(MDINFOS) $(GLOGS) $(YAML)
+test : $(PRMTOPS) $(MDINFOS) $(GLOGS) $(YAML) $(COMPARE)
 
 .PHONY : temp
 temp :
@@ -42,6 +43,12 @@ temp/%.gromos.yml : temp/%.gromos.log
 
 temp/%.amber.yml : temp/%.amber.mdinfo
 	./amber_energy < $< > $@
+
+#.PHONY : $(COMPARE)
+%_compare : temp/%.amber.yml temp/%.gromos.yml
+	echo $* && \
+	    ./compare_energies $< $(word 2,$^)
+
 
 .PHONY : clean
 clean :

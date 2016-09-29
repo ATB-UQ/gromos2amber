@@ -28,7 +28,7 @@ output["total_coulomb"] = amber["EELEC"]+amber["1-4_EEL"]
 output["coulomb_1-4"] = amber["1-4_EEL"]
 output["total_vdw"] = amber["VDWAALS"]+amber["1-4_NB"]
 output["vdw_1-4"] = amber["1-4_NB"]
-output["total_potential"] = amber["EPtot"]
+#output["total_potential"] = amber["EPtot"]
 
 print(yaml.dump(output, default_flow_style=False))
 
