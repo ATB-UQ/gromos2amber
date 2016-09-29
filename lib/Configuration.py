@@ -5,14 +5,38 @@ NANOMETRE = 10.0
 class Configuration:
     def __init__(self, io):
         blocks = gf.parse_blocks(io)
-        block = blocks["POSITION"]
         nm = NANOMETRE
-        _,_,_,_,x,y,z = gf.parse_simple_columns(block, [5,6,6,7,15,15,15],
+        genbox = blocks["GENBOX"]
+        self.box_size = [ float(x)*nm for x in genbox[2].split() ]
+
+        _,_,_,_,x,y,z = gf.parse_simple_columns(blocks["POSITION"],
+                                            [5,6,6,7,15,15,15],
                                             (int,str,str,int,float,float,float),
                                             header = False)
-        self.positions = [ [xi*nm,yi*nm,zi*nm] for xi,yi,zi in zip(x,y,z) ]
 
-        block = blocks["GENBOX"]
-        self.box_size = [ float(x)*nm for x in block[2].split() ]
+
+        if "LATTICESHIFTS" in blocks:
+            sx,sy,sz = gf.parse_simple_columns(blocks["LATTICESHIFTS"],
+                                               [10,10,10],
+                                               (int,int,int),
+                                               header = False)
+        else:
+            numatoms = len(x)
+            sx = [0]*numatoms
+            sy,sz = list(sx), list(sx)
+
+        bx,by,bz = self.box_size
+        #for xi,sxi in zip(x,sx):
+        #    if xi<0 or xi>bx/nm: print(xi,sxi)
+        #for yi in y:
+        #    if yi<0 or yi>by/nm: print(yi)
+        #for zi in z:
+        #    if zi<0 or zi>bz/nm: print(zi)
+
+        #print(self.box_size)
+
+        self.positions = [ [xi*nm+sxi*bx, yi*nm+syi*by, zi*nm+szi*bz]
+                            for xi,yi,zi,sxi,syi,szi in zip(x,y,z,sx,sy,sz) ]
+
 
 

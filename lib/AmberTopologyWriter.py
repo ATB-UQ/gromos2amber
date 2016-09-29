@@ -82,7 +82,8 @@ class AmberTopologyWriter:
         mphia = len(self.topology.dihedrals_woH)
         nhparm = 0 # unused by amber
         nparm = 0 # 1 if topology file created by addles
-        nnb = sum( len(atom.exclusions) for atom in self.topology.atoms )
+        nnb = sum( len(atom.exclusions) if len(atom.exclusions)>0 else 1
+                   for atom in self.topology.atoms )
         nres = len( self.topology.residues )
         nbona = mbona 
         ntheta = mtheta
@@ -153,7 +154,8 @@ class AmberTopologyWriter:
         format_string = '10I8'
         comment = NOCOMMENT
         order = 700
-        values = [ len(atom.exclusions) for atom in self.topology.atoms ]
+        values = [ len(atom.exclusions) if len(atom.exclusions)>0 else 1
+                   for atom in self.topology.atoms ]
         return values, format_string, comment, order
     
     def NONBONDED_PARM_INDEX(self):
@@ -313,7 +315,10 @@ class AmberTopologyWriter:
         comment = 'comment'
         order = 2900
         values = []
-        [ values.extend(atom.exclusions) for atom in self.topology.atoms ]
+        for atom in self.topology.atoms:
+            numexcl = len(atom.exclusions)
+            exclusions = [ e+1 for e in atom.exclusions ] if numexcl>0 else [0]
+            values.extend(exclusions)
         return values, format_string, comment, order
     
     def HBOND_ACOEF(self):

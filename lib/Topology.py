@@ -67,6 +67,15 @@ class Topology:
 
         self.atoms.extend(solvent_atoms)
 
+        broken_bonds = _bonds_over_boundaries(self.bonds_wH, self.bonds_woH,
+                                                 configuration)
+        if len(broken_bonds) > 0:
+            print("Found {} bonds extending over boundaries:".format(
+                                                            len(broken_bonds)))
+            for bond in broken_bonds:
+                print("{}--{}".format(bond.atoms[0], bond.atoms[1]))
+            raise Exception("broken bonds")
+
 
     def get_title(self): return self.title.replace('\n','_')
 
@@ -82,8 +91,8 @@ def _read_atoms_and_residues(gromos):
                         typecode[i]-1, 
                         mass[i],
                         charge[i],
-                        exclusions[i],
-                        neigh14[i])
+                        [ e-1 for e in exclusions[i] ],
+                        [ n14-1 for n14 in neigh14[i] ])
                     for i in range(numatoms) ]
     residue_names = gromos.RESNAMES()
     residues = []
@@ -168,7 +177,7 @@ def _read_solvent(gromos, numsolvent):
 def _read_atoms_per_solute_molecule(gromos):
     mol_last_index = gromos.SOLUTEMOLECULES()
     nummol = len(mol_last_index)
-    return [ mol_last_index[i] - sum(mol_last_index[0:i])
+    return [ mol_last_index[i] - (0 if i==0 else mol_last_index[i-1])
             for i in range(nummol) ]
 
 def _extra_dihedrals(atoms, dihedrals_wH, dihedrals_woH, dummy_typecode):
@@ -194,6 +203,26 @@ def _fix_14_exclusions(atoms, dihedrals):
         di, dl = (di,dl) if di<dl else (dl,di)
         if dl in atoms[di].exclusions_wo14:
             dihedral.exclude_14()
+
+
+def _bonds_over_boundaries(bonds_wH, bonds_woH, configuration):
+    x = configuration.positions
+    box = configuration.box_size
+    broken_bonds = []
+    allbonds = list(bonds_woH)
+    allbonds.extend(bonds_wH)
+    if sum(box) == 0:
+        return []
+    for bond in allbonds:
+        i,j = bond.atoms
+        for d in range(2):
+            if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
+                broken_bonds.append(bond)
+
+                break
+    return broken_bonds
+
+
 
 class Atom:
     def __init__(self, name, typecode, mass, charge, exclusions, neigh14):
