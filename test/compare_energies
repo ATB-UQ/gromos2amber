@@ -11,6 +11,7 @@
 
 import sys
 import yaml
+from numpy import spacing, float32
 
 if len(sys.argv) != 3:
     print("usage: {} energy.amber.yml energy.gromos.yml\n".format(sys.argv[0]))
@@ -25,8 +26,9 @@ with open(amber_energy_file) as f: amber = yaml.load(f)
 with open(gromos_energy_file) as f: gromos = yaml.load(f)
 
 lfmt = "{:15s} {:14s} {:14s} {:5s} {:s}"
-fmt = "{: >15s} {: > 14.5e} {: > 14.5e} {: > 10.5e} {: > 10.1e}"
-print( lfmt.format(" quantity", " gromos", " amber", " (amber-gromos)", "(amber-gromos)/gromos") )
+fmt = "{: >15s} {: > 14.5e} {: > 14.5e} {: > 10.5e} {: > 10.1e} {:s}"
+print( lfmt.format(" quantity", " gromos", " amber",
+                    " (amber-gromos)", "(amber-gromos)/gromos") )
 for label in gromos.keys():
     if label in amber.keys():
         dif = amber[label]-gromos[label]
@@ -34,5 +36,6 @@ for label in gromos.keys():
             x = 0. if dif == 0 else 1.
         else:
             x = (amber[label]-gromos[label])/gromos[label] if gromos[label] != 0 else 999
-    
-        print(fmt.format(label, gromos[label], amber[label], dif, x))
+
+        warn = "***" if abs(x)>1e-8 else ''
+        print(fmt.format(label, gromos[label], amber[label], dif, x, warn))
