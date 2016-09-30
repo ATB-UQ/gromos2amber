@@ -23,6 +23,7 @@ eg "TITLE"), the amber_sections.NOCOMMENT is returned as the comment.
 from fortranformat import FortranRecordWriter as FortranWriter
 from inspect import getmembers, ismethod
 
+
 # Constants
 NOCOMMENT = "" # comment when no comment required
 NOTERMS = "This section intentionally left empty."
@@ -125,7 +126,7 @@ class AmberTopologyWriter:
         format_string = '3E24.16'
         comment = 'comment'
         order = 300
-        k = 18.2223
+        k = self.topology.charge_prefactor
         values = [ k*atom.charge for atom in self.topology.atoms ]
         return values, format_string, comment, order
     

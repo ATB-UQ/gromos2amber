@@ -1,4 +1,5 @@
 from GromosTopologyParser import GromosTopologyParser
+from math import sqrt
 
 KILOJOULE = 1.0/4.184 # kCal
 NANOMETRE = 10.0 # angstroms
@@ -46,6 +47,8 @@ class Topology:
                                                    self.dihedrals_woH,
                                                    len(self.dihedral_types)-1))
         self.is_periodic = True
+        one_on_4_pi_eps0 = gromos.PHYSICALCONSTANTS()[0] *KILOJOULE*NANOMETRE
+        self.charge_prefactor = sqrt(one_on_4_pi_eps0) #gromos
 
         num_solute_atoms = len(self.atoms)
         atoms_per_solute = _read_atoms_per_solute_molecule(gromos)
