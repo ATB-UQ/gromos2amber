@@ -1,5 +1,7 @@
 
-TEST_CASES := 1177_H2O_vacuum 1177_H2O_liquid
+TEST_CASES := \
+    1177_H2O_vacuum 1177_H2O_liquid \
+    3798_H2O_vacuum 3798_H2O_liquid
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.amber.prmtop)
 MDINFOS := $(foreach X,$(TEST_CASES),temp/$X.amber.mdinfo)
 GLOGS := $(foreach X,$(TEST_CASES),temp/$X.gromos.log)
