@@ -6,3 +6,8 @@ Calculate energies only
   cut=14, ntb=0, igb=0, ntwe=1
   ntt=0
  &end
+ &ewald
+ eedmeth=4,
+ vdwmeth=0,
+ use_pme=0
+ &end
