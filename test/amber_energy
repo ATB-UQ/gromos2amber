@@ -4,31 +4,31 @@ import sys
 import yaml
 
 #amber mdinfo file
-input = sys.stdin.read()
+lines = sys.stdin.readlines()
+labellines = lines[:10]
+valuelines = lines[10:]
 
-# get amber energy info from file
+labels = []
+for line in labellines:
+    labels.extend([ label.strip() for label in line.split()[1:] ])
 
-terms = input.replace("1-4 ","1-4_").split()
+values = []
+for line in valuelines:
+    values.extend([ float(label) for label in line.split()[1:] ])
 
-amber = {}
 calorie = 4.184 # J
-for i in range(0, len(terms), 3): # read amber energy data
-    label = terms[i]
-    if label in ["BOND", "ANGLE", "DIHED", "IMP",
-            "EELEC", "1-4_EEL", "VDWAALS", "1-4_NB", "EPtot"]:
-        value = float(terms[i+2])
-        amber[label] = value*calorie
+amber = { label : value*calorie for label, value in zip(labels,values) }
 
 output = {}
-output["bonds"] = amber["BOND"]
-output["angles"] = amber["ANGLE"]
-output["dihedrals"] = amber["DIHED"]
-output["impropers"] = amber["IMP"]
-output["total_coulomb"] = amber["EELEC"]+amber["1-4_EEL"]
-output["coulomb_1-4"] = amber["1-4_EEL"]
-output["total_vdw"] = amber["VDWAALS"]+amber["1-4_NB"]
-output["vdw_1-4"] = amber["1-4_NB"]
-#output["total_potential"] = amber["EPtot"]
+output["bonds"] = amber["E_bon"]
+output["angles"] = amber["E_angle"]
+output["dihedrals"] = amber["E_dih"]
+#output["impropers"] = amber["E_imp"]
+output["total_coulomb"] = amber["E_el"]+amber["E_14el"]
+output["coulomb_1-4"] = amber["E_14el"]
+output["total_vdw"] = amber["E_vdw"]+amber["E_14vdw"]
+output["vdw_1-4"] = amber["E_14vdw"]
+output["total_potential"] = amber["E_pot"]
 
 print(yaml.dump(output, default_flow_style=False))
 

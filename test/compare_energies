@@ -28,10 +28,11 @@ lfmt = "{:15s} {:14s} {:14s} {:5s} {:s}"
 fmt = "{: >15s} {: > 14.5e} {: > 14.5e} {: > 10.5e} {: > 10.6f}"
 print( lfmt.format(" quantity", " gromos", " amber", " (amber-gromos)", "(amber-gromos)/gromos") )
 for label in gromos.keys():
-    dif = amber[label]-gromos[label]
-    if gromos[label] + amber[label] == 0 :
-        x = 0. if dif == 0 else 1.
-    else:
-        x = (amber[label]-gromos[label])/gromos[label] if gromos[label] != 0 else 999
-
-    print(fmt.format(label, gromos[label], amber[label], dif, x))
+    if label in amber.keys():
+        dif = amber[label]-gromos[label]
+        if gromos[label] + amber[label] == 0 :
+            x = 0. if dif == 0 else 1.
+        else:
+            x = (amber[label]-gromos[label])/gromos[label] if gromos[label] != 0 else 999
+    
+        print(fmt.format(label, gromos[label], amber[label], dif, x))

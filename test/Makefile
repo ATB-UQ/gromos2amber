@@ -3,7 +3,7 @@ TEST_CASES := \
     1177_H2O_vacuum 1177_H2O_liquid \
     3798_H2O_vacuum 3798_H2O_liquid
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.amber.prmtop)
-MDINFOS := $(foreach X,$(TEST_CASES),temp/$X.amber.mdinfo)
+AENERGY := $(foreach X,$(TEST_CASES),temp/$X.amber.energy)
 GLOGS := $(foreach X,$(TEST_CASES),temp/$X.gromos.log)
 YAML := $(foreach X,$(TEST_CASES),temp/$X.gromos.yml) \
     $(foreach X,$(TEST_CASES),temp/$X.amber.yml)
@@ -11,7 +11,7 @@ COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
 
 .PHONY : test
-test : $(PRMTOPS) $(MDINFOS) $(GLOGS) $(YAML) $(COMPARE)
+test : $(PRMTOPS) $(AENERGY) $(GLOGS) $(YAML) $(COMPARE)
 
 .PHONY : temp
 temp :
@@ -36,11 +36,11 @@ temp/%.amber.prmtop : $(GROMOS2AMBER) temp/%.gromos.top temp/%.gromos.cnf
 	./$< temp/$*.gromos.top temp/$*.gromos.cnf \
 		temp/$*.amber.prmtop temp/$*.amber.inpcrd
 
-temp/%.mdinfo: temp/%.in temp/%.prmtop #temp/%.inpcrd
+temp/%.energy: temp/%.in temp/%.prmtop #temp/%.inpcrd
 	cd temp && \
 	sander -O -i $*.in \
 	    -o $*.out -p $*.prmtop -c $*.inpcrd \
-	    -r $*.crd -inf $*.mdinfo
+	    -r $*.crd -inf $*.mdinfo -e $*.energy
 
 
 temp/%.log : temp/%.imd temp/%.top temp/%.cnf
@@ -55,7 +55,7 @@ temp/%.log : temp/%.imd temp/%.top temp/%.cnf
 temp/%.gromos.yml : temp/%.gromos.log
 	./gromos_energy < $< > $@
 
-temp/%.amber.yml : temp/%.amber.mdinfo
+temp/%.amber.yml : temp/%.amber.energy
 	./amber_energy < $< > $@
 
 #.PHONY : $(COMPARE)

@@ -25,7 +25,7 @@ output["dihedrals"] = gromos["Dihedral"]
 output["impropers"] = gromos["Improper"]
 output["total_coulomb"] = gromos["El (RF)"]
 output["total_vdw"] = gromos["Vdw"]
-#output["total_potential"] = gromos["Potential"]
+output["total_potential"] = gromos["Potential"]
 
 print(yaml.dump(output, default_flow_style=False))
 
