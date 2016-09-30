@@ -39,7 +39,7 @@ PAIRLIST
 #                     atomic (1) (atom based cutoff)
 #
 #    algorithm    NSNB    RCUTP    RCUTL    SIZE    TYPE
-            1      5      1.4      1.4     0.7     0
+            0      5      1.4      1.4     0.7     1
 END
 NONBONDED
 # NLRELE    APPAK      RCRF     EPSRF  NSLFEXCL
