@@ -4,14 +4,14 @@ TEST_CASES := \
     3798_H2O_vacuum 3798_H2O_liquid
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.amber.prmtop)
 AENERGY := $(foreach X,$(TEST_CASES),temp/$X.amber.energy)
-GLOGS := $(foreach X,$(TEST_CASES),temp/$X.gromos.log)
+TRES := $(foreach X,$(TEST_CASES),temp/$X.gromos.tre)
 YAML := $(foreach X,$(TEST_CASES),temp/$X.gromos.yml) \
     $(foreach X,$(TEST_CASES),temp/$X.amber.yml)
 COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
 
 .PHONY : test
-test : $(PRMTOPS) $(AENERGY) $(GLOGS) $(YAML) $(COMPARE)
+test : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE)
 
 .PHONY : temp
 temp :
@@ -43,7 +43,7 @@ temp/%.energy: temp/%.in temp/%.prmtop #temp/%.inpcrd
 	    -r $*.crd -inf $*.mdinfo -e $*.energy
 
 
-temp/%.log : temp/%.imd temp/%.top temp/%.cnf
+temp/%.tre : temp/%.imd temp/%.top temp/%.cnf
 	md \
 	    \@input temp/$*.imd \
 	    \@topo temp/$*.top \
@@ -52,7 +52,10 @@ temp/%.log : temp/%.imd temp/%.top temp/%.cnf
 	    \@trc  temp/$*.trc \
 	    \@tre  temp/$*.tre > temp/$*.log
 
-temp/%.gromos.yml : temp/%.gromos.log
+gromos_format.py : ../lib/gromos_format.py
+	cp $< $@
+
+temp/%.gromos.yml : temp/%.gromos.tre gromos_format.py
 	./gromos_energy < $< > $@
 
 temp/%.amber.yml : temp/%.amber.energy
@@ -66,4 +69,4 @@ temp/%.amber.yml : temp/%.amber.energy
 
 .PHONY : clean
 clean :
-	rm -r temp
+	rm -r temp gromos_format.py

@@ -2,30 +2,22 @@
 
 import sys
 import yaml
+from gromos_format import parse_blocks, parse_simple_columns
 
 #gromos log file
-gromoslines = sys.stdin.readlines()
 
-gromos = {}
-num_energy_lines = 38
-for l,line in enumerate(gromoslines):
-    if line == "ENERGIES\n":
-        energylines = gromoslines[l+1:l+num_energy_lines]
-        break
-for line in energylines:
-    key, valuestr = line.split(':')
-    key = key[2:].strip()
-    value = float(valuestr)
-    gromos[key] = float(value)
+blocks = parse_blocks(sys.stdin)
+
+energies = [ float(x) for x in blocks["ENERGY03"][1:39] ]
 
 output = {}
-output["bonds"] = gromos["Bonds"]
-output["angles"] = gromos["Angles"]
-output["dihedrals"] = gromos["Dihedral"]
-output["impropers"] = gromos["Improper"]
-output["total_coulomb"] = gromos["El (RF)"]
-output["total_vdw"] = gromos["Vdw"]
-output["total_potential"] = gromos["Potential"]
+output["bonds"] = energies[4]
+output["angles"] = energies[5]
+output["dihedrals"] = energies[7]
+output["impropers"] = energies[6]
+output["total_coulomb"] = energies[11]
+output["total_vdw"] = energies[10]
+output["total_potential"] = energies[2]
 
 print(yaml.dump(output, default_flow_style=False))
 
