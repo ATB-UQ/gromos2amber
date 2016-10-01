@@ -215,7 +215,7 @@ class AmberTopologyWriter:
         format_string = '5E16.8'
         comment = NOCOMMENT
         order = 1500
-        values = [ 0.5*dihedral.k
+        values = [ dihedral.k
                     for dihedral in self.topology.dihedral_types ]
         return values, format_string, comment, order
     

@@ -202,7 +202,7 @@ def _extra_dihedrals(atoms, dihedrals_wH, dihedrals_woH, dummy_typecode):
                     found = True
                     break
             if not found:
-                extra.append(Dihedral([i,i,l,l],dummy_typecode))
+                extra.append(Interaction([i,i,l,l],dummy_typecode))
     return extra
 
 def _fix_14_exclusions(atoms, dihedrals):
