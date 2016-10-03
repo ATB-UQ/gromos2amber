@@ -20,7 +20,7 @@ eg "TITLE"), the amber_sections.NOCOMMENT is returned as the comment.
 # import all the amber_helpers functions, as inspect will then treat them as
 # though they are part of amber_sections.py.
 
-from fortranformat import FortranRecordWriter as FortranWriter
+from fortran_format import fortran_format
 from inspect import getmembers, ismethod
 
 
@@ -511,5 +511,5 @@ def _section_header(title, comment, format_string):
     return flag + com + fmt
 
 def _section_body(values, format_string):
-    return FortranWriter(format_string).write(values) + '\n'
+    return fortran_format(format_string, values)
 

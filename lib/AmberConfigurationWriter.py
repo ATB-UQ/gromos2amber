@@ -1,6 +1,4 @@
-from fortranformat import FortranRecordWriter as FortranWriter
-
-DEBUG_VS_PDB = False
+from fortran_format import fortran_format
 
 class AmberConfigurationWriter:
     def __init__(self, configuration):
@@ -10,13 +8,9 @@ class AmberConfigurationWriter:
         title = "TEST TITLE"
         io.write(title+'\n')
         positions = self.configuration.positions
-        io.write(FortranWriter("I5,5E15.7").write([len(positions),0]) + '\n')
+        io.write(fortran_format("I5,5E15.7",[len(positions),0]))
         values = []
         [ values.extend(pos) for pos in positions ]
-        if DEBUG_VS_PDB:
-            values = [ round(co, 3) for pos in values ]
-        io.write(FortranWriter("6F12.7").write(values))
-        io.write('\n')
-        io.write(FortranWriter("6F12.7").write(self.configuration.box_size))
-        io.write('\n')
+        io.write(fortran_format("6F12.7", values))
+        io.write(fortran_format("6F12.7", self.configuration.box_size))
 
