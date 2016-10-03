@@ -1,17 +1,19 @@
 
 TEST_CASES := \
     1177_H2O_vacuum 1177_H2O_liquid \
-    3798_H2O_vacuum 3798_H2O_liquid
+    3798_H2O_vacuum 3798_H2O_liquid \
+    32084_H2O_aa_vacuum
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.amber.prmtop)
 AENERGY := $(foreach X,$(TEST_CASES),temp/$X.amber.energy)
 TRES := $(foreach X,$(TEST_CASES),temp/$X.gromos.tre)
+IMDS := $(foreach X,$(TEST_CASES),temp/$X.gromos.imd)
 YAML := $(foreach X,$(TEST_CASES),temp/$X.gromos.yml) \
     $(foreach X,$(TEST_CASES),temp/$X.amber.yml)
 COMPARE := $(foreach X,$(TEST_CASES),$X_compare)
 GROMOS2AMBER := ../gromos2amber
 
 .PHONY : test
-test : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE)
+test : $(PRMTOPS) $(AENERGY) $(TRES) $(YAML) $(COMPARE) $(IMDS)
 
 .PHONY : temp
 temp :
@@ -26,11 +28,11 @@ temp/%_vacuum.amber.in : vacuum.amber.in
 temp/%_liquid.amber.in : liquid.amber.in
 	cp $< $@
 
-temp/%_vacuum.gromos.imd : vacuum.gromos.imd
-	cp $< $@
+temp/%_vacuum.gromos.imd : vacuum.gromos.imd %_vacuum.gromos.cnf
+	./make_imd $(word 2,$^) < $< > $@
 
-temp/%_liquid.gromos.imd : liquid.gromos.imd
-	cp $< $@
+temp/%_liquid.gromos.imd : liquid.gromos.imd %_liquid.gromos.cnf
+	./make_imd $(word 2,$^) < $< > $@
 
 temp/%.amber.prmtop : $(GROMOS2AMBER) temp/%.gromos.top temp/%.gromos.cnf
 	./$< temp/$*.gromos.top temp/$*.gromos.cnf \

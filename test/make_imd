@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+cnf_file=$1
+
+numatoms=$(( $(grep -v '#' < $cnf_file |sed -n '/POSITION/,/END/p' |wc -l) - 2))
+
+sed  "s/{{num_atoms}}/${numatoms}/g" <&0 
