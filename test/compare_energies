@@ -26,7 +26,7 @@ with open(amber_energy_file) as f: amber = yaml.load(f)
 with open(gromos_energy_file) as f: gromos = yaml.load(f)
 
 lfmt = "{:15s} {:14s} {:14s} {:5s} {:s}"
-fmt = "{: >15s} {: > 14.5e} {: > 14.5e} {: > 10.5e} {: > 10.1e} {:s}"
+fmt = "{: >15s} {: > 14.5e} {: > 14.5e} {: > 10.5e} {: > 10.3e} {:s}"
 print( lfmt.format(" quantity", " gromos", " amber",
                     " (amber-gromos)", "(amber-gromos)/gromos") )
 for label in gromos.keys():
@@ -37,5 +37,5 @@ for label in gromos.keys():
         else:
             x = (amber[label]-gromos[label])/gromos[label] if gromos[label] != 0 else 999
 
-        warn = "***" if abs(x)>1e-8 else ''
+        warn = "**" if abs(x)>1e-5 else ('*' if abs(x)>1e-8 else '')
         print(fmt.format(label, gromos[label], amber[label], dif, x, warn))
