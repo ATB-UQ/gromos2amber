@@ -35,7 +35,6 @@ class GromosTopologyParser:
         l = 2
         for i in range(numatoms):
             fields = [block[l][a:b] for a,b in fieldbounds ]
-            print(fields)
             atomindex[i] = int(fields[0])
             residue[i]   = int(fields[1])
             name[i]      = fields[2].strip()
