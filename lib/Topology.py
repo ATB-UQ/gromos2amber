@@ -143,7 +143,7 @@ def _read_dihedral_types(gromos):
 def _read_improper_types(gromos):
     spring,angle = gromos.IMPDIHEDRALTYPE()
     unitk = KILOJOULE/DEGREE**2
-    unitxi0 = 1.0
+    unitxi0 = DEGREE
     return [ ImproperType(k*unitk,xi0*unitxi0)
                 for k,xi0 in zip(spring, angle) ]
 
