@@ -470,20 +470,19 @@ class AmberTopologyWriter:
         return values, format_string, comment, order
      
 # for bonds, angles, and dihedrals, but not chamber impropers
-def _amber_index(index):
-    return 3*(index-1) if index>0 else -3*(-index-1)
+def _amber_index(index): return 3*(index-1)
 
 def _get_amber_indices(interactions, impropers = False):
     values = []
     for interaction in interactions:
         atoms = interaction.atoms
+        index_sign = [ 1 for atom in atoms ]
         if interaction.is_excluding_14():
-            atoms = list(interaction.atoms) # avoid mutating original
-            atoms[2] *= -1
-        for atom_index in atoms:
+            index_sign[2] = -1 
+        for sign,atom_index in zip(index_sign,atoms):
             index = atom_index+1
             index = index if impropers else _amber_index(index)
-            values.append(index)
+            values.append(sign*index)
         values.append(interaction.typecode+1)
     return values
 
