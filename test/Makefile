@@ -2,7 +2,27 @@
 TEST_CASES := \
     1177_H2O_vacuum 1177_H2O_liquid \
     3798_H2O_vacuum 3798_H2O_liquid \
-    32084_H2O_aa_vacuum
+    32084_aa_H2O_vacuum \
+    34231_aa_H2O_vacuum \
+    32785_aa_H2O_vacuum \
+    31084_aa_H2O_vacuum \
+    24070_aa_H2O_vacuum \
+    4482_aa_H2O_vacuum \
+    34239_aa_H2O_vacuum \
+    32133_aa_H2O_vacuum \
+    33786_aa_H2O_vacuum \
+    820_aa_H2O_vacuum \
+    32084_ua_H2O_vacuum \
+    34231_ua_H2O_vacuum \
+    32785_ua_H2O_vacuum \
+    31084_ua_H2O_vacuum \
+    24070_ua_H2O_vacuum \
+    4482_ua_H2O_vacuum \
+    34239_ua_H2O_vacuum \
+    32133_ua_H2O_vacuum \
+    33786_ua_H2O_vacuum \
+    820_ua_H2O_vacuum
+ 
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.amber.prmtop)
 AENERGY := $(foreach X,$(TEST_CASES),temp/$X.amber.energy)
 TRES := $(foreach X,$(TEST_CASES),temp/$X.gromos.tre)
