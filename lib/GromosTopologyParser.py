@@ -21,6 +21,7 @@ class GromosTopologyParser:
     def SOLUTEATOM(self):
         fieldwidths = [6,5,5,4,9,9,3,6]
         start_exclusions = sum(fieldwidths)
+        start_neigh14_extra = sum(fieldwidths) - 2
         fieldbounds = [ ( sum(fieldwidths[0:i]), sum(fieldwidths[0:i+1]) ) 
                              for i in range(len(fieldwidths)) ]
         block = self.blocks["SOLUTEATOM"]
@@ -34,6 +35,7 @@ class GromosTopologyParser:
         l = 2
         for i in range(numatoms):
             fields = [block[l][a:b] for a,b in fieldbounds ]
+            print(fields)
             atomindex[i] = int(fields[0])
             residue[i]   = int(fields[1])
             name[i]      = fields[2].strip()
@@ -49,14 +51,14 @@ class GromosTopologyParser:
             exclusions[i] = [ int(exclusions_string[6*e:6*(e+1)])
                               for e in range(num_exclusions) ]
 
+            # assume space delimited (compatible with gromos 1.3.1 )
             l += 1
-            num_neigh14 = int(block[l][0:start_exclusions])
-            neigh14_string = block[l][sum(fieldwidths):-1]
-            while len(neigh14_string) < 6*num_neigh14:
+            neigh14_list =[ int(x) for x in block[l].split() ]
+            num_neigh14 = neigh14_list[0] 
+            neigh14[i].extend(neigh14_list[1:])
+            while len(neigh14[i]) < num_neigh14:
                 l += 1
-                neigh14_string += block[l][start_exclusions:-1]
-            neigh14[i] = [ int(neigh14_string[6*n:6*(n+1)])
-                              for n in range(num_neigh14) ]
+                neigh14[i].extend([ int(x) for x in block[l].split() ])
             l += 1
 
         return ( atomindex, residue, name, typecode, mass, charge,
