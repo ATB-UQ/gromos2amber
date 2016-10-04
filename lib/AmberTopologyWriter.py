@@ -478,7 +478,7 @@ def _get_amber_indices(interactions, impropers = False):
     for interaction in interactions:
         atoms = interaction.atoms
         if interaction.is_excluding_14():
-            atoms = list(atoms) # avoid mutating original
+            atoms = list(interaction.atoms) # avoid mutating original
             atoms[2] *= -1
         for atom_index in atoms:
             index = atom_index+1
