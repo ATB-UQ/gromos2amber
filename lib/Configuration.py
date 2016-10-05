@@ -6,8 +6,12 @@ class Configuration:
     def __init__(self, io):
         blocks = gf.parse_blocks(io)
         nm = NANOMETRE
-        genbox = blocks["GENBOX"]
-        self.box_size = [ float(x)*nm for x in genbox[2].split() ]
+        if "GENBOX" in blocks:
+            genbox = blocks["GENBOX"]
+            self.box_size = [ float(x)*nm for x in genbox[2].split() ]
+        elif "BOX" in blocks:
+            box = blocks["BOX"]
+            self.box_size = [ float(x)*nm for x in box[1].split() ]
 
         _,_,_,_,x,y,z = gf.parse_simple_columns(blocks["POSITION"],
                                             [5,6,6,7,15,15,15],
