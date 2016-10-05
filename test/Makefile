@@ -23,7 +23,8 @@ TEST_CASES := \
     32133_ua_H2O_vacuum \
     33786_ua_H2O_vacuum \
     820_ua_H2O_vacuum \
-    34011_ua_H2O_vacuum
+    34011_ua_H2O_vacuum \
+    DLPC_H2O_512_bilayer
  
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.amber.prmtop)
 AENERGY := $(foreach X,$(TEST_CASES),temp/$X.amber.energy)
@@ -50,11 +51,17 @@ temp/%_vacuum.amber.in : vacuum.amber.in
 temp/%_liquid.amber.in : liquid.amber.in
 	cp $< $@
 
+temp/%_bilayer.amber.in : bilayer.amber.in
+	cp $< $@
+
 temp/%_vacuum.gromos.imd : vacuum.gromos.imd %_vacuum.gromos.cnf
-	./make_imd $(word 2,$^) < $< > $@
+	./make_imd $(word 2,$^) 3 < $< > $@
 
 temp/%_liquid.gromos.imd : liquid.gromos.imd %_liquid.gromos.cnf
-	./make_imd $(word 2,$^) < $< > $@
+	./make_imd $(word 2,$^) 3 < $< > $@
+
+temp/%_bilayer.gromos.imd : bilayer.gromos.imd %_bilayer.gromos.cnf
+	./make_imd $(word 2,$^) 3 < $< > $@
 
 temp/%.amber.prmtop : $(GROMOS2AMBER) temp/%.gromos.top temp/%.gromos.cnf
 	./$< temp/$*.gromos.top temp/$*.gromos.cnf \

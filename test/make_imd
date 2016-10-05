@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
 cnf_file=$1
+atoms_per_solvent=$2
 
 numatoms=$(( $(grep -v '#' < $cnf_file |sed -n '/POSITION/,/END/p' |wc -l) - 2))
+numsolv=$(( $(grep -v '#' < $cnf_file |\
+    sed -n '/POSITION/,/END/p' |grep SOL |wc -l) / ${atoms_per_solvent} ))
 
-sed  "s/{{num_atoms}}/${numatoms}/g" <&0 
+sed "s/{{num_atoms}}/${numatoms}/g" <&0 | \
+    sed "s/{{num_solvent}}/${numsolv}/g" 
