@@ -65,7 +65,7 @@ class Topology:
 
         self.num_solute_residues = len(self.residues)
         #nsr = self.num_solute_residues
-        self.residues.extend([ Residue("SOLV",
+        self.residues.extend([ Residue("SOL",
                                     atoms_per_solvent*i + num_solute_atoms,
                                     atoms_per_solvent)
                                 for i in range(num_solvent_molecules) ])
@@ -100,7 +100,9 @@ def _read_solvent_bonds(gromos, atoms_per_solvent, num_solvent_molecules,
     i0 = first_solvent_index
     for m in range(num_solvent_molecules):
         for i,j,r0 in zip(ii,jj,lengths):
-            solvent_bonds.append(Interaction([i0+i,i0+j],typecodes[r0]))
+            bi = i0+m*atoms_per_solvent+i-1
+            bj = i0+m*atoms_per_solvent+j-1
+            solvent_bonds.append(Interaction([bi,bj],typecodes[r0]))
     
     return solvent_bonds, solvent_bond_types
 
@@ -190,7 +192,7 @@ def _read_solvent(gromos, num_solvent_atoms, num_solute_atoms):
     _,name,typecode,mass,charge = gromos.SOLVENTATOM()
     n = len(name)
     nua = num_solute_atoms
-    atoms = [ Atom(name[i%n],
+    atoms = [ Atom(name[i%n].strip(),
                         typecode[i%n]-1, 
                         mass[i%n],
                         charge[i%n],
