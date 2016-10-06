@@ -3,7 +3,7 @@
 # so these have been manually converted to python format codes
 
 FORMAT_CODES = {
-        '20A4'    : ['{:>4s}']*20,
+        '20A4'    : ['{:<4s}']*20,
         'I2,A78'  : ['{:>2d}','{:>78s}'],
         '10I8'    : ['{:>8d}']*10,
         'I8'      : ['{:>8d}'],
