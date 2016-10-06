@@ -127,6 +127,9 @@ class GromosTopologyParser:
         block = self.blocks["SOLVENTATOM"]
         return parse_simple_columns(block, [4,6,4,11,11],
                                       [int,str,int,float,float])
+    def SOLVENTCONSTR(self):
+        block = self.blocks["SOLVENTCONSTR"]
+        return parse_simple_columns(block, [5,5,15], [int,int,float])
 
     def LJEXCEPTIONS(self):
         block = self.blocks["LJEXCEPTIONS"]

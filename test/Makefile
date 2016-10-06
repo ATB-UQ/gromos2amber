@@ -24,7 +24,8 @@ TEST_CASES := \
     33786_ua_H2O_vacuum \
     820_ua_H2O_vacuum \
     34011_ua_H2O_vacuum \
-    DLPC_H2O_512_bilayer
+    DLPC_H2O_512_bilayer \
+    DLPC_noH2O_512_bilayer
  
 PRMTOPS := $(foreach X,$(TEST_CASES),temp/$X.amber.prmtop)
 AENERGY := $(foreach X,$(TEST_CASES),temp/$X.amber.energy)
