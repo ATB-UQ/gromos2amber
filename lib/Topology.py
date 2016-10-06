@@ -92,6 +92,7 @@ def _read_solvent_bonds(gromos, atoms_per_solvent, num_solvent_molecules,
                                             first_solvent_index,
                                             num_bond_types):
     ii,jj,lengths = gromos.SOLVENTCONSTR()
+    lengths = [ r0*NANOMETRE for r0 in lengths ]
     solvent_bond_types = [ BondType(0.0,r0) for r0 in set(lengths) ]
     typecodes = { bondtype.r0 : index+num_bond_types
                         for index,bondtype in enumerate(solvent_bond_types) }
