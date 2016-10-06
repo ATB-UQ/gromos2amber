@@ -62,17 +62,10 @@ class AmberTopologyWriter:
         values = [title[i:i+4] for i in range(0, LINEWIDTH, 4)]
         return values, format_string, comment, order
     
-    def FORCE_FIELD_TYPE(self):
-        format_string ='I2,A78'
-        comment = 'comment'
-        order = 50
-        values = [1, "CHARMM force field: No FF information parsed..."]
-        return values, format_string, comment, order
-    
     def POINTERS(self):
         format_string = '10I8'
         comment = 'comment'
-        order = 100
+        order = 50
         natom = len(self.topology.atoms)
         ntypes = len(self.topology.atom_types)
         nbonh = len(self.topology.bonds_wH)
@@ -113,6 +106,13 @@ class AmberTopologyWriter:
         ifpert, nbper, ngper, ndper, mbper, mgper, mdper, ifbox, nmxrs, ifcap,
         numextra , ncopy
         ]
+        return values, format_string, comment, order
+
+    def FORCE_FIELD_TYPE(self):
+        format_string ='I2,A78'
+        comment = 'comment'
+        order = 100
+        values = [1, "CHARMM force field: No FF information parsed..."]
         return values, format_string, comment, order
     
     def ATOM_NAME(self):
