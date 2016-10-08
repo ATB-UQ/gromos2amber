@@ -136,7 +136,7 @@ def _read_atom_types(gromos):
     names = gromos.ATOMTYPENAME()
     # Amber limits type names to 2 characters.
     # Use typecode instead when this is violated
-    return [ str(i+1) if len(name.strip())>2 else name.strip()
+    return [ name[:4] if len(name.strip())>4 else name.strip()
              for i,name in enumerate(names) ]
 
 def _read_bond_types(gromos):
