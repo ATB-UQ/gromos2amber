@@ -64,7 +64,7 @@ class AmberTopologyWriter:
     
     def POINTERS(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 50
         natom = len(self.topology.atoms)
         ntypes = len(self.topology.atom_types)
@@ -110,21 +110,21 @@ class AmberTopologyWriter:
 
     def FORCE_FIELD_TYPE(self):
         format_string ='I2,A78'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 100
         values = [1, "CHARMM force field: No FF information parsed..."]
         return values, format_string, comment, order
     
     def ATOM_NAME(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 200
         values = [ atom.name for atom in self.topology.atoms ]
         return values, format_string, comment, order
     
     def CHARGE(self):
         format_string = '3E24.16'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 300
         k = self.topology.charge_prefactor
         values = [ k*atom.charge for atom in self.topology.atoms ]
@@ -146,7 +146,7 @@ class AmberTopologyWriter:
     
     def ATOM_TYPE_INDEX(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 600
         values = [ atom.typecode+1 for atom in self.topology.atoms ]
         return values, format_string, comment, order
@@ -161,7 +161,7 @@ class AmberTopologyWriter:
     
     def NONBONDED_PARM_INDEX(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 800
         numtypes = len(self.topology.atom_types)
         irange = range(1, numtypes+1)
@@ -170,14 +170,14 @@ class AmberTopologyWriter:
     
     def RESIDUE_LABEL(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 900
         values = [ residue.name for residue in self.topology.residues ]
         return values, format_string, comment, order
     
     def RESIDUE_POINTER(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1000
         previous = -1
         values = [ residue.first+1 for residue in self.topology.residues ]
@@ -185,28 +185,28 @@ class AmberTopologyWriter:
     
     def BOND_FORCE_CONSTANT(self):
         format_string = '5E16.8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1100
         values = [ 0.5*bond.k for bond in self.topology.bond_types ]
         return values, format_string, comment, order
     
     def BOND_EQUIL_VALUE(self):
         format_string = '5E16.8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1200
         values = [ bond.r0 for bond in self.topology.bond_types ]
         return values, format_string, comment, order
     
     def ANGLE_FORCE_CONSTANT(self):
         format_string = '5E16.8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1300
         values = [ 0.5*angle.k for angle in self.topology.angle_types ]
         return values, format_string, comment, order
     
     def ANGLE_EQUIL_VALUE(self):
         format_string = '3E25.17'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1400
         values = [ angle.theta0 for angle in self.topology.angle_types ]
         return values, format_string, comment, order
@@ -221,14 +221,14 @@ class AmberTopologyWriter:
     
     def DIHEDRAL_PERIODICITY(self):
         format_string = '5E16.8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1600
         values = [ dihedral.n for dihedral in self.topology.dihedral_types ]
         return values, format_string, comment, order
     
     def DIHEDRAL_PHASE(self):
         format_string = '5E16.8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1700
         values = [ dihedral.phi0
                     for dihedral in self.topology.dihedral_types ]
@@ -236,14 +236,14 @@ class AmberTopologyWriter:
     
     def SCEE_SCALE_FACTOR(self):
         format_string = '5E16.8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1800
         values = [ 1.0 for dihedral in self.topology.dihedral_types ]
         return values, format_string, comment, order
     
     def SCNB_SCALE_FACTOR(self):
         format_string = '5E16.8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 1900
         values = [ 1.0 for dihedral in self.topology.dihedral_types ]
         return values, format_string, comment, order
@@ -257,14 +257,14 @@ class AmberTopologyWriter:
     
     def LENNARD_JONES_ACOEF(self):
         format_string = '3E24.16'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2100
         values = [ pair.c12 for pair in self.topology.lj_pair_types ]
         return values, format_string, comment, order
     
     def LENNARD_JONES_BCOEF(self):
         format_string = '3E24.16'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2200
         values = [ pair.c6 for pair in self.topology.lj_pair_types ]
         return values, format_string, comment, order
@@ -278,42 +278,42 @@ class AmberTopologyWriter:
     
     def BONDS_WITHOUT_HYDROGEN(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2400
         values = _get_amber_indices(self.topology.bonds_woH)
         return values, format_string, comment, order
     
     def ANGLES_INC_HYDROGEN(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2500
         values = _get_amber_indices(self.topology.angles_wH)
         return values, format_string, comment, order
     
     def ANGLES_WITHOUT_HYDROGEN(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2600
         values = _get_amber_indices(self.topology.angles_woH)
         return values, format_string, comment, order
     
     def DIHEDRALS_INC_HYDROGEN(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2700
         values = _get_amber_indices(self.topology.dihedrals_wH)
         return values, format_string, comment, order
     
     def DIHEDRALS_WITHOUT_HYDROGEN(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2800
         values = _get_amber_indices(self.topology.dihedrals_woH)
         return values, format_string, comment, order
     
     def EXCLUDED_ATOMS_LIST(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 2900
         values = []
         for atom in self.topology.atoms:
@@ -324,28 +324,28 @@ class AmberTopologyWriter:
     
     def HBOND_ACOEF(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3000
         values = []
         return values, format_string, comment, order
     
     def HBOND_BCOEF(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3200
         values = []
         return values, format_string, comment, order
     
     def HBCUT(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3300
         values = []
         return values, format_string, comment, order
     
     def AMBER_ATOM_TYPE(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3400
         atomtypes = self.topology.atom_types
         values = [ atomtypes[atom.typecode] for atom in self.topology.atoms ]
@@ -360,21 +360,21 @@ class AmberTopologyWriter:
     
     def JOIN_ARRAY(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3600
         values = [ 0 for atom in self.topology.atoms ]
         return values, format_string, comment, order
     
     def IROTAT(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3700
         values = [ 0 for atom in self.topology.atoms ]
         return values, format_string, comment, order
     
     def SOLVENT_POINTERS(self):
         format_string = '3I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3730
         values = [ self.topology.num_solute_residues,
                    len(self.topology.atoms_per_molecule),
@@ -384,7 +384,7 @@ class AmberTopologyWriter:
 
     def ATOMS_PER_MOLECULE(self):
         format_string = '10I8'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 3730
         values = [ numatoms for numatoms in self.topology.atoms_per_molecule ]
         return values, format_string, comment, order
@@ -405,14 +405,14 @@ class AmberTopologyWriter:
     
     def CHARMM_UREY_BRADLEY_FORCE_CONSTANT(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 4000
         values = []
         return values, format_string, comment, order
     
     def CHARMM_UREY_BRADLEY_EQUIL_VALUE(self):
         format_string = '20A4'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 4100
         values = []
         return values, format_string, comment, order
@@ -427,7 +427,7 @@ class AmberTopologyWriter:
     
     def CHARMM_IMPROPERS(self):
         format_string = "10I8"
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 4300
         impropers = list(self.topology.impropers_wH)
         impropers.extend(self.topology.impropers_woH)
@@ -457,14 +457,14 @@ class AmberTopologyWriter:
     
     def LENNARD_JONES_14_ACOEF(self):
         format_string = '3E24.16'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 4700
         values = [ pair.c12_14 for pair in self.topology.lj_pair_types ]
         return values, format_string, comment, order
     
     def LENNARD_JONES_14_BCOEF(self):
         format_string = '3E24.16'
-        comment = 'comment'
+        comment = NOCOMMENT
         order = 4800
         values = [ pair.c6_14 for pair in self.topology.lj_pair_types ]
         return values, format_string, comment, order
@@ -504,8 +504,7 @@ def _section(title, comment, format_string, values):
 def _section_header(title, comment, format_string):
     flag = "%FLAG {}\n".format(title)
     nocomment = comment == NOCOMMENT
-    nocomment = True
-    com = "" if nocomment else "%COMMENT {}\n".format(title)
+    com = "" if nocomment else "%COMMENT {}\n".format(comment)
     fmt = "%FORMAT({})\n".format(format_string)
     return flag + com + fmt
 
