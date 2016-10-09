@@ -5,32 +5,45 @@ from lib.Topology import Topology
 from lib.Configuration import Configuration
 from lib.AmberTopologyWriter import AmberTopologyWriter
 from lib.AmberConfigurationWriter import AmberConfigurationWriter
+import argparse
 
-helpstring = "help\n"
-if len(sys.argv) != 5:
-    sys.stderr.write(helpstring)
-    exit(1)
+parser = argparse.ArgumentParser(
+        description="Convert Gromos simulation inputs to Amber inputs.",
+        #allow_abbrev=False
+        )
+ 
+#solvent_groups = parser.add_mutually_exclusive_group()
 
-gromos_topology_filename = sys.argv[1]
-gromos_configuration_filename = sys.argv[2]
-amber_topology_filename = sys.argv[3]
-amber_configuration_filename = sys.argv[4]
+parser.add_argument("--config_in",
+        metavar="INPUT_CONFIGURATION_FILE",
+        type=str,
+        required=True,
+        help="Input Gromos-format configuration file")
 
-with open(gromos_configuration_filename) as f: config = Configuration(f)
-with open(gromos_topology_filename) as f: topology = Topology(f)
+parser.add_argument("--config_out",
+        metavar="OUTPUT_CONFIGURATION_FILE",
+        type=str,
+        required=False,
+        help="Output Amber-format configuration file")
 
-num_atoms = len(config.positions)
-num_solvent_molecules = int(  (num_atoms - len(topology.atoms) )
-                            / len(topology.solvent_atoms)   )
-topology.add_solvent(num_solvent_molecules)
+args = parser.parse_args()
 
-config.gather_molecules(topology)
+topology = Topology(sys.stdin)
 
-with open(amber_topology_filename, "w") as f:
-    AmberTopologyWriter(topology).write(f)
+if not args.config_in == None:
+    with open(args.config_in) as f: config = Configuration(f)
+    config.gather_molecules(topology)
+    num_atoms = len(config.positions)
+    num_solvent_molecules = int(  (num_atoms - len(topology.atoms) )
+            / len(topology.solvent_atoms)   )
 
-with open(amber_configuration_filename, "w") as f:
-    AmberConfigurationWriter(config).write(f)
+    topology.add_solvent(num_solvent_molecules)
+
+    if not args.config_out == None:
+        with open(args.config_out, "w") as f:
+            AmberConfigurationWriter(config).write(f)
+
+AmberTopologyWriter(topology).write(sys.stdout)
 
 exit(0)
 
