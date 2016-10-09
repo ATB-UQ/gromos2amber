@@ -10,9 +10,8 @@ class Topology:
     # _wH := with hydrogen
     # _woH := without hydrogen
 
-    def __init__(self, io, configuration):
+    def __init__(self, io):
         gromos = GromosTopologyParser(io)
-        numatoms = len(configuration.positions)
 
         self.title = gromos.TITLE()
 
@@ -50,57 +49,52 @@ class Topology:
         one_on_4_pi_eps0 = gromos.PHYSICALCONSTANTS()[0] *KILOJOULE*NANOMETRE
         self.charge_prefactor = sqrt(one_on_4_pi_eps0) #gromos
 
-        num_solute_atoms = len(self.atoms)
-        atoms_per_solute = _read_atoms_per_solute_molecule(gromos)
-        self.num_solute_molecules = len(atoms_per_solute)
-        numsolvent = numatoms - num_solute_atoms
-        solvent_atoms, atoms_per_solvent = _read_solvent(gromos,
-                                                        numsolvent,
-                                                        num_solute_atoms)
-        num_solvent_molecules = int(len(solvent_atoms)/atoms_per_solvent)
+        self.atoms_per_molecule = _read_atoms_per_solute_molecule(gromos)
+        self.num_solute_molecules = len(self.atoms_per_molecule)
 
-        self.atoms_per_molecule = list(atoms_per_solute)
-        self.atoms_per_molecule.extend([atoms_per_solvent
+        self.solvent_atoms = _read_solvent(gromos)
+        bondinfo = _read_solvent_bonds(gromos, len(self.bond_types))
+        self.solvent_bonds, self.solvent_bond_types = bondinfo
+
+    def add_solvent(self, num_solvent_molecules):
+
+        atoms_per_solvent = len(self.solvent_atoms)
+        num_solute_atoms = len(self.atoms)
+
+        self.atoms_per_molecule.extend([len(self.solvent_atoms)
                                         for i in range(num_solvent_molecules)])
 
         self.num_solute_residues = len(self.residues)
-        #nsr = self.num_solute_residues
+
         self.residues.extend([ Residue("SOL",
                                     atoms_per_solvent*i + num_solute_atoms,
                                     atoms_per_solvent)
                                 for i in range(num_solvent_molecules) ])
 
-        self.atoms.extend(solvent_atoms)
+        self.bond_types.extend(self.solvent_bond_types)
 
-        solvent_bonds, solvent_bond_types = _read_solvent_bonds(
-                gromos,
-                atoms_per_solvent,
+        all_solvent_atoms, all_solvent_bonds = _create_solvent(
+                self.solvent_atoms,
+                self.solvent_bonds,
                 num_solvent_molecules,
-                num_solute_atoms,
-                len(self.bond_types))
+                num_solute_atoms)
 
-        self.bond_types.extend(solvent_bond_types)
-        self.bonds_wH.extend(solvent_bonds)
+        self.atoms.extend(all_solvent_atoms)
+        self.bonds_wH.extend(all_solvent_bonds)
+
 
     def get_title(self): return self.title.replace('\n','_')
 
 ##### End of Topology class #####
 
-def _read_solvent_bonds(gromos, atoms_per_solvent, num_solvent_molecules,
-                                            first_solvent_index,
-                                            num_bond_types):
+def _read_solvent_bonds(gromos, num_bond_types):
     ii,jj,lengths = gromos.SOLVENTCONSTR()
     lengths = [ r0*NANOMETRE for r0 in lengths ]
     solvent_bond_types = [ BondType(0.0,r0) for r0 in set(lengths) ]
     typecodes = { bondtype.r0 : index+num_bond_types
                         for index,bondtype in enumerate(solvent_bond_types) }
-    solvent_bonds = []
-    i0 = first_solvent_index
-    for m in range(num_solvent_molecules):
-        for i,j,r0 in zip(ii,jj,lengths):
-            bi = i0+m*atoms_per_solvent+i-1
-            bj = i0+m*atoms_per_solvent+j-1
-            solvent_bonds.append(Interaction([bi,bj],typecodes[r0]))
+    solvent_bonds = [ Interaction([i-1,j-1], typecodes[r0])
+                        for i,j,r0 in zip(ii,jj,lengths) ]
     
     return solvent_bonds, solvent_bond_types
 
@@ -186,19 +180,43 @@ def _read_lj_pair_types(gromos):
                 for i in range(numpairs)
                 ]
 
-def _read_solvent(gromos, num_solvent_atoms, num_solute_atoms):
+def _read_solvent(gromos):
     _,name,typecode,mass,charge = gromos.SOLVENTATOM()
     n = len(name)
-    nua = num_solute_atoms
-    atoms = [ Atom(name[i%n].strip(),
-                        typecode[i%n]-1, 
-                        mass[i%n],
-                        charge[i%n],
-                        [ j+nua for j in range(int(i/n)*n,int(i/n+1)*n)
-                            if not j==i ],
-                        [])
-                    for i in range(num_solvent_atoms) ]
-    return atoms, n
+    atoms = [ Atom(name[i].strip(),
+                   typecode[i]-1, 
+                   mass[i],
+                   charge[i],
+                   [], [])
+              for i in range(n) ]
+    return atoms
+
+def _create_solvent(solvent_atoms, solvent_bonds,
+                    num_molecules, first_solvent_index):
+    name = [ atom.name for atom in solvent_atoms ]
+    m = [ atom.mass for atom in solvent_atoms ]
+    q = [ atom.charge for atom in solvent_atoms ]
+    tc = [ atom.typecode for atom in solvent_atoms ]
+    n = len(solvent_atoms)
+    i0 = first_solvent_index
+    atoms = [ Atom(name[i%n],
+                   tc[i%n], 
+                   m[i%n],
+                   q[i%n],
+                   [ j+i0 for j in range(int(i/n)*n,int(i/n+1)*n)
+                       if not j==i ],
+                   []
+                   )
+              for i in range(num_molecules * n) ]
+
+    bonds = []
+    for mol in range(num_molecules):
+        for bond in solvent_bonds:
+            bi = i0+mol*n+bond.atoms[0]
+            bj = i0+mol*n+bond.atoms[1]
+            bonds.append(Interaction([bi,bj],bond.typecode))
+
+    return atoms, bonds
 
 def _read_atoms_per_solute_molecule(gromos):
     mol_last_index = gromos.SOLUTEMOLECULES()

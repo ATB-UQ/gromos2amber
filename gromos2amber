@@ -17,7 +17,12 @@ amber_topology_filename = sys.argv[3]
 amber_configuration_filename = sys.argv[4]
 
 with open(gromos_configuration_filename) as f: config = Configuration(f)
-with open(gromos_topology_filename) as f: topology = Topology(f, config)
+with open(gromos_topology_filename) as f: topology = Topology(f)
+
+num_atoms = len(config.positions)
+num_solvent_molecules = int(  (num_atoms - len(topology.atoms) )
+                            / len(topology.solvent_atoms)   )
+topology.add_solvent(num_solvent_molecules)
 
 config.gather_molecules(topology)
 
