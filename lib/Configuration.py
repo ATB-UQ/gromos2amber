@@ -32,6 +32,7 @@ class Configuration:
 
         self.positions = [ [xi*nm+sxi*bx, yi*nm+syi*by, zi*nm+szi*bz]
                             for xi,yi,zi,sxi,syi,szi in zip(x,y,z,sx,sy,sz) ]
+        self.title = ''.join(blocks["TITLE"][1:-1]).strip()
 
     def gather_molecules(self, topology):
         x = self.positions

@@ -5,7 +5,7 @@ class AmberConfigurationWriter:
         self.configuration = configuration
 
     def write(self, io):
-        title = "TEST TITLE"
+        title = self.configuration.title.replace('\n','; ')
         io.write(title+'\n')
         positions = self.configuration.positions
         io.write(fortran_format("I5,5E15.7",[len(positions),0]))
