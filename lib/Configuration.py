@@ -33,5 +33,23 @@ class Configuration:
         self.positions = [ [xi*nm+sxi*bx, yi*nm+syi*by, zi*nm+szi*bz]
                             for xi,yi,zi,sxi,syi,szi in zip(x,y,z,sx,sy,sz) ]
 
-
+    def gather_molecules(self, topology):
+        x = self.positions
+        box = self.box_size
+        bond_lists = (topology.bonds_wH, topology.bonds_woH)
+        if sum(box) == 0:
+            return []
+        num_broken_bond_dims = 1
+        while num_broken_bond_dims > 0:
+            num_broken_bond_dims = 0
+            for bonds in bond_lists:
+                for bond in bonds:
+                    i,j = bond.atoms
+                    for d in range(3):
+                        if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
+                            num_broken_bond_dims += 1
+                            if x[i][d] > x[j][d]:
+                                x[j][d] += box[d]
+                            else:
+                                x[i][d] += box[d]
 

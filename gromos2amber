@@ -19,6 +19,8 @@ amber_configuration_filename = sys.argv[4]
 with open(gromos_configuration_filename) as f: config = Configuration(f)
 with open(gromos_topology_filename) as f: topology = Topology(f, config)
 
+config.gather_molecules(topology)
+
 with open(amber_topology_filename, "w") as f:
     AmberTopologyWriter(topology).write(f)
 
