@@ -56,7 +56,7 @@ class Topology:
         bondinfo = _read_solvent_bonds(gromos, len(self.bond_types))
         self.solvent_bonds, self.solvent_bond_types = bondinfo
 
-    def add_solvent(self, num_solvent_molecules):
+    def add_solvent(self, num_solvent_molecules, residue_name):
 
         atoms_per_solvent = len(self.solvent_atoms)
         num_solute_atoms = len(self.atoms)
@@ -66,7 +66,7 @@ class Topology:
 
         self.num_solute_residues = len(self.residues)
 
-        self.residues.extend([ Residue("SOL",
+        self.residues.extend([ Residue(residue_name,
                                     atoms_per_solvent*i + num_solute_atoms,
                                     atoms_per_solvent)
                                 for i in range(num_solvent_molecules) ])

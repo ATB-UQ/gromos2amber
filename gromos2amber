@@ -34,7 +34,25 @@ parser.add_argument("--config_out",
         required=False,
         help="Output Amber-format configuration file")
 
+parser.add_argument("--solvent_resname",
+        metavar="SOLVENT_RESIDUE_NAME",
+        type=str,
+        required=False,
+        default="SOL",
+        help="The name of the solvent residues. "
+              +"Maximum 4 characters. (Default: SOL)")
+
 args = parser.parse_args()
+
+if len(args.solvent_resname)>4:
+    sys.stderr.write(
+            "ERROR: Solvent residue name cannot be longer than 4 characers.")
+    exit(1)
+
+if args.solvent_resname == "":
+    sys.stderr.write(
+            "ERROR: Solvent residue name cannot be an empty string.")
+    exit(1)
 
 if args.config_in == None and not args.config_out == None:
     sys.stderr.write("WARNING: Cannot write configuration file when no input "
@@ -52,7 +70,7 @@ if not args.config_in == None:
 else:
     num_solvent_molecules = args.num_solvent
 
-topology.add_solvent(num_solvent_molecules)
+topology.add_solvent(num_solvent_molecules, args.solvent_resname)
 
 AmberTopologyWriter(topology).write(sys.stdout)
 
