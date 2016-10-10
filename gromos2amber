@@ -12,13 +12,21 @@ parser = argparse.ArgumentParser(
         #allow_abbrev=False
         )
  
-#solvent_groups = parser.add_mutually_exclusive_group()
+solvent_groups = parser.add_mutually_exclusive_group()
 
-parser.add_argument("--config_in",
+solvent_groups.add_argument("--config_in",
         metavar="INPUT_CONFIGURATION_FILE",
         type=str,
-        required=True,
+        required=False,
         help="Input Gromos-format configuration file")
+
+solvent_groups.add_argument("--num_solvent",
+        metavar="N",
+        type=int,
+        required=False,
+        default=0,
+        help="Number of solvent molecules to include in output topology. "
+                +"(Default: 0)")
 
 parser.add_argument("--config_out",
         metavar="OUTPUT_CONFIGURATION_FILE",
@@ -28,6 +36,11 @@ parser.add_argument("--config_out",
 
 args = parser.parse_args()
 
+if args.config_in == None and not args.config_out == None:
+    sys.stderr.write("WARNING: Cannot write configuration file when no input "
+                     +"configuration file has been supplied.")
+    args.config_out = None
+
 topology = Topology(sys.stdin)
 
 if not args.config_in == None:
@@ -36,14 +49,16 @@ if not args.config_in == None:
     num_atoms = len(config.positions)
     num_solvent_molecules = int(  (num_atoms - len(topology.atoms) )
             / len(topology.solvent_atoms)   )
+else:
+    num_solvent_molecules = args.num_solvent
 
-    topology.add_solvent(num_solvent_molecules)
-
-    if not args.config_out == None:
-        with open(args.config_out, "w") as f:
-            AmberConfigurationWriter(config).write(f)
+topology.add_solvent(num_solvent_molecules)
 
 AmberTopologyWriter(topology).write(sys.stdout)
+
+if not args.config_out == None:
+    with open(args.config_out, "w") as f:
+        AmberConfigurationWriter(config).write(f)
 
 exit(0)
 
