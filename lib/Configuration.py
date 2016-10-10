@@ -1,4 +1,4 @@
-import gromos_format as gf
+from . import gromos_format as gf
 
 NANOMETRE = 10.0
 

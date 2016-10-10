@@ -1,4 +1,4 @@
-from fortran_format import fortran_format
+from .fortran_format import fortran_format
 
 class AmberConfigurationWriter:
     def __init__(self, configuration):

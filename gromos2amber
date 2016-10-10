@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 from lib.Topology import Topology
@@ -9,7 +9,7 @@ import argparse
 
 parser = argparse.ArgumentParser(
         description="Convert Gromos simulation inputs to Amber inputs.",
-        #allow_abbrev=False
+        allow_abbrev=False
         )
  
 solvent_groups = parser.add_mutually_exclusive_group()

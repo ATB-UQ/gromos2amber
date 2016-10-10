@@ -1,4 +1,4 @@
-from gromos_format import parse_simple_columns, parse_array_block
+from .gromos_format import parse_simple_columns, parse_array_block
 
 class GromosTopologyParser:
 

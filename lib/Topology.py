@@ -1,4 +1,4 @@
-from GromosTopologyParser import GromosTopologyParser
+from .GromosTopologyParser import GromosTopologyParser
 from math import sqrt
 
 KILOJOULE = 1.0/4.184 # kCal
