@@ -17,5 +17,8 @@ optional arguments:
                           topology. (Default: 0)
     --config_out OUTPUT_CONFIGURATION_FILE
                           Output Amber-format configuration file
+    --solvent_resname SOLVENT_RESIDUE_NAME
+                          The name of the solvent residues. Maximum 4
+                          characters. (Default: SOL)
 ```
 
