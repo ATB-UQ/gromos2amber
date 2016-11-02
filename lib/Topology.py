@@ -25,7 +25,7 @@ class Topology:
         self.dihedral_types = _read_dihedral_types(gromos)
         self.improper_types = _read_improper_types(gromos)
 
-        self.dihedral_types.append(DihedralType(0.0,0.0,0.0)) #dummy for 1-4
+        self.dihedral_types.append(DihedralType(0.0,0.0,1.0)) #dummy for 1-4
 
         ri = _read_bonded_interaction
         self.bonds_woH     = ri(gromos.BOND(H=False))
@@ -38,8 +38,8 @@ class Topology:
         self.dihedrals_wH = ri(gromos.DIHEDRAL(H=True))
         self.impropers_wH = ri(gromos.IMPDIHEDRAL(H=True))
         # Marks dihedrals for which 1-4 interactions must be excluded
-        _fix_14_exclusions(self.atoms, self.dihedrals_wH)
-        _fix_14_exclusions(self.atoms, self.dihedrals_woH)
+        all_dihedrals = self.dihedrals_wH + self.dihedrals_woH
+        _fix_14_exclusions(self.atoms, all_dihedrals)
         # Add dummy dihedrals to force 1-4 interactions where required
         self.dihedrals_woH.extend(_extra_dihedrals(self.atoms,
                                                    self.dihedrals_wH,
@@ -242,11 +242,18 @@ def _extra_dihedrals(atoms, dihedrals_wH, dihedrals_woH, dummy_typecode):
     return extra
 
 def _fix_14_exclusions(atoms, dihedrals):
-    for dihedral in dihedrals:
-        di, dl = dihedral.atoms[0], dihedral.atoms[3]
-        di, dl = (di,dl) if di<dl else (dl,di)
-        if dl in atoms[di].exclusions_wo14:
+    for d,dihedral in enumerate(dihedrals):
+        i, l = dihedral.atoms[0], dihedral.atoms[3]
+        i, l = min(i,l), max(i,l)
+        if l in atoms[i].exclusions_wo14:
             dihedral.exclude_14()
+            continue
+        for preceeding_dihedral in dihedrals[:d]:
+            ip, lp = preceeding_dihedral.atoms[0], preceeding_dihedral.atoms[3]
+            ip, lp = min(ip,lp), max(ip,lp)
+            if i == ip and l == lp:
+                dihedral.exclude_14()
+                break
 
 class Atom:
     def __init__(self, name, typecode, mass, charge, exclusions, neigh14):
@@ -266,7 +273,7 @@ class Interaction:
         self.atoms = atoms
         self.typecode = typecode
         self._exclude14 = False
-        if len(atoms)==4 and (atoms[2] == 1 or atoms[3] == 1):
+        if len(atoms)==4 and (atoms[2] == 0 or atoms[3] == 0):
             self.atoms.reverse()
 
     def exclude_14(self, exclude = True):
