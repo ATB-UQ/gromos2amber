@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-from lib.Topology import Topology
-from lib.Configuration import Configuration
-from lib.AmberTopologyWriter import AmberTopologyWriter
-from lib.AmberConfigurationWriter import AmberConfigurationWriter
+from gromos2amber import gromos2amber
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -44,39 +41,23 @@ parser.add_argument("--solvent_resname",
 
 args = parser.parse_args()
 
-if len(args.solvent_resname)>4:
-    sys.stderr.write(
-            "ERROR: Solvent residue name cannot be longer than 4 characers.")
-    exit(1)
-
-if args.solvent_resname == "":
-    sys.stderr.write(
-            "ERROR: Solvent residue name cannot be an empty string.")
-    exit(1)
-
 if args.config_in == None and not args.config_out == None:
     sys.stderr.write("WARNING: Cannot write configuration file when no input "
                      +"configuration file has been supplied.")
     args.config_out = None
 
-topology = Topology(sys.stdin)
-
-if not args.config_in == None:
-    with open(args.config_in) as f: config = Configuration(f)
-    config.gather_molecules(topology)
-    num_atoms = len(config.positions)
-    num_solvent_molecules = int(  (num_atoms - len(topology.atoms) )
-            / len(topology.solvent_atoms)   )
-else:
-    num_solvent_molecules = args.num_solvent
-
-topology.add_solvent(num_solvent_molecules, args.solvent_resname)
-
-AmberTopologyWriter(topology).write(sys.stdout)
-
-if not args.config_out == None:
-    with open(args.config_out, "w") as f:
-        AmberConfigurationWriter(config).write(f)
+cin = open(args.config_in ) if not args.config_in == None else None
+cout = open(args.config_out, "w" ) if not args.config_out == None else None
+try:
+    gromos2amber(sys.stdin, sys.stdout,
+            config_in=cin, config_out = cout,
+            solvent_resname = args.solvent_resname,
+            num_solvent = args.num_solvent)
+except:
+    raise
+finally:
+    cin.close()  if not cin == None else None
+    cout.close() if not cin == None else None
 
 exit(0)
 
