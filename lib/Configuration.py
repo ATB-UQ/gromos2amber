@@ -1,11 +1,13 @@
 from . import gromos_format as gf
 
 NANOMETRE = 10.0
+PICOSECONDS = 1/20.455 #amber time unit (1/20.455 ps)
 
 class Configuration:
     def __init__(self, io):
         blocks = gf.parse_blocks(io)
         nm = NANOMETRE
+        ps = PICOSECONDS
         if "GENBOX" in blocks:
             genbox = blocks["GENBOX"]
             self.box_size = [ float(x)*nm for x in genbox[2].split() ]
@@ -27,6 +29,16 @@ class Configuration:
             numatoms = len(x)
             sx = [0]*numatoms
             sy,sz = list(sx), list(sx)
+
+        if "VELOCITY" in blocks:
+            _,_,_,_,vx,vy,vz = gf.parse_simple_columns(blocks["VELOCITY"],
+                                            [5,6,6,7,15,15,15],
+                                            (int,str,str,int,float,float,float),
+                                            header = False)
+            self.velocities = [ [xi*nm/ps, yi*nm/ps, zi*nm/ps]
+                                    for xi,yi,zi in zip(vx,vy,vz) ]
+        else:
+            self.velocities = None
 
         bx,by,bz = self.box_size
 
