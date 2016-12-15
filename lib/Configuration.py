@@ -1,7 +1,7 @@
 from . import gromos_format as gf
 
 NANOMETRE = 10.0
-PICOSECONDS = 1/20.455 #amber time unit (1/20.455 ps)
+PICOSECONDS = 20.455 #amber time unit (1/20.455 ps)
 
 class Configuration:
     def __init__(self, io):
