@@ -9,7 +9,7 @@ gromos2amber [-h]
              [--config_in INPUT_CONFIGURATION_FILE | --num_solvent N]
              [--config_out OUTPUT_CONFIGURATION_FILE]
              < INPUT_GROMOS_TOPOLOGY
-             > OUTPUT_GROMOS_TOPOLOGY
+             > OUTPUT_AMBER_TOPOLOGY
 
 optional arguments:
     -h, --help            show this help message and exit
