@@ -15,10 +15,22 @@ class Configuration:
             box = blocks["BOX"]
             self.box_size = [ float(x)*nm for x in box[1].split() ]
 
-        _,_,_,_,x,y,z = gf.parse_simple_columns(blocks["POSITION"],
-                                            [5,6,6,7,15,15,15],
-                                            (int,str,str,int,float,float,float),
-                                            header = False)
+        posblock, cols, types  = ("POSITION",
+                                  [5,6,6,7,15,15,15],
+                                  (int,str,str,int,float,float,float),
+                                  ) if "POSITION" in blocks \
+                                          else ("POSITIONRED",
+                                                [15,15,15],
+                                                (float,float,float),
+                                                ) if "POSITIONRED" in blocks \
+                                                         else (None,None,None)
+
+        if None == posblock: raise(Exception("No position block found"))
+        columns = gf.parse_simple_columns(blocks[posblock],
+                                          cols,
+                                          types,
+                                          header = False)
+        x,y,z = columns[-3:]
 
         if "LATTICESHIFTS" in blocks:
             sx,sy,sz = gf.parse_simple_columns(blocks["LATTICESHIFTS"],
@@ -30,11 +42,21 @@ class Configuration:
             sx = [0]*numatoms
             sy,sz = list(sx), list(sx)
 
-        if "VELOCITY" in blocks:
-            _,_,_,_,vx,vy,vz = gf.parse_simple_columns(blocks["VELOCITY"],
-                                            [5,6,6,7,15,15,15],
-                                            (int,str,str,int,float,float,float),
-                                            header = False)
+        if "VELOCITY" in blocks or "VELOCITYRED" in blocks:
+            velblock, cols, types = ("VELOCITY",
+                                     [5,6,6,7,15,15,15],
+                                     (int,str,str,int,float,float,float),
+                                     ) if "VELOCITY" in blocks \
+                                             else ("VELOCITYRED",
+                                                   [15,15,15],
+                                                   (float,float,float),
+                                                   )
+            columns = gf.parse_simple_columns(blocks[velblock],
+                                              cols,
+                                              types,
+                                              header = False)
+            vx,vy,vz = columns[-3:]
+
             self.velocities = [ [xi*nm/ps, yi*nm/ps, zi*nm/ps]
                                     for xi,yi,zi in zip(vx,vy,vz) ]
         else:
