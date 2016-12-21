@@ -1,4 +1,5 @@
 from . import gromos_format as gf
+import sys
 
 NANOMETRE = 10.0
 PICOSECONDS = 20.455 #amber time unit (1/20.455 ps)
@@ -84,7 +85,9 @@ class Configuration:
                         if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
                             num_broken_bond_dims += 1
                             if x[i][d] > x[j][d]:
+                                if x[j][d]>box[d]: raise(Exception("stuck in loop"))
                                 x[j][d] += box[d]
                             else:
+                                if x[i][d]>box[d]: raise(Exception("stuck in loop"))
                                 x[i][d] += box[d]
 
