@@ -31,8 +31,14 @@ def gromos2amber( topology_in,
         config = Configuration(config_in)
         config.gather_molecules(topology)
         num_atoms = len(config.positions)
-        num_solvent_molecules = int(  (num_atoms - len(topology.atoms) )
-                / len(topology.solvent_atoms)   )
+        num_solvent_molecules = ( num_atoms - len(topology.atoms) ) \
+                                * 1.0 / len(topology.solvent_atoms) 
+        if not int(num_solvent_molecules) == num_solvent_molecules:
+            msg = "Number of solvent atoms ({}) not divisible by number of "\
+                    "number of atoms per solvent molecule ({})"
+            raise Exception(msg.format(num_solute,
+                                       len(topology.solvent_atoms)))
+        num_solvent_molecules = int(num_solvent_molecules)
     else:
         num_solvent_molecules = num_solvent
     
