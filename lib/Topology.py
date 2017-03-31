@@ -228,32 +228,25 @@ def _extra_dihedrals(atoms, dihedrals_wH, dihedrals_woH, dummy_typecode):
     extra = []
     all_dihedrals = list(dihedrals_wH)
     all_dihedrals.extend(dihedrals_woH)
+    found = [ { n14:False for n14 in atom.neigh14 } for atom in atoms ]
+    for dihedral in all_dihedrals:
+        i, l = dihedral.atoms[0], dihedral.atoms[3]
+        i, l = (i,l) if i<l else (l,i)
+        found[i][l] = True
     for i,atom in enumerate(atoms):
         for l in atom.neigh14:
-            found = False
-            for dihedral in all_dihedrals:
-                di, dl = dihedral.atoms[0], dihedral.atoms[3]
-                di, dl = (di,dl) if di<dl else (dl,di)
-                if di == i and dl == l:
-                    found = True
-                    break
-            if not found:
-                extra.append(Interaction([i,i,l,l],dummy_typecode))
+           if not found[i][l]:
+               extra.append(Interaction([i,i,l,l],dummy_typecode))
     return extra
 
 def _fix_14_exclusions(atoms, dihedrals):
+    prev_l = [ [] for atom in atoms ]
     for d,dihedral in enumerate(dihedrals):
         i, l = dihedral.atoms[0], dihedral.atoms[3]
-        i, l = min(i,l), max(i,l)
-        if l in atoms[i].exclusions_wo14:
+        i, l = (i,l) if i<l else (l,i)
+        if l in atoms[i].exclusions_wo14 or l in prev_l[i]:
             dihedral.exclude_14()
-            continue
-        for preceeding_dihedral in dihedrals[:d]:
-            ip, lp = preceeding_dihedral.atoms[0], preceeding_dihedral.atoms[3]
-            ip, lp = min(ip,lp), max(ip,lp)
-            if i == ip and l == lp:
-                dihedral.exclude_14()
-                break
+        prev_l[i].append(l)
 
 class Atom:
     def __init__(self, name, typecode, mass, charge, exclusions, neigh14):
