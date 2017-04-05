@@ -1,9 +1,9 @@
 
 import sys
-from lib.Topology import Topology
-from lib.Configuration import Configuration
-from lib.AmberTopologyWriter import AmberTopologyWriter
-from lib.AmberConfigurationWriter import AmberConfigurationWriter
+from .lib.Topology import Topology
+from .lib.Configuration import Configuration
+from .lib.AmberTopologyWriter import AmberTopologyWriter
+from .lib.AmberConfigurationWriter import AmberConfigurationWriter
 
 def gromos2amber( topology_in,
                   topology_out,
