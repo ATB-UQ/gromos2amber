@@ -1,9 +1,9 @@
 
-import sys
 from lib.Topology import Topology
 from lib.Configuration import Configuration
 from lib.AmberTopologyWriter import AmberTopologyWriter
 from lib.AmberConfigurationWriter import AmberConfigurationWriter
+from lib.Errors import GromosFormatError, IllegalArgumentError
 
 def gromos2amber( topology_in,
                   topology_out,
@@ -12,32 +12,45 @@ def gromos2amber( topology_in,
                   solvent_resname="SOL",
                   num_solvent = -1,
                   ):
-    if len(solvent_resname)>4:
-        raise(Exception(
-                "ERROR: Solvent residue name cannot be longer than 4 characers."))
-    
-    if solvent_resname == "":
-        raise(Exception(
-                "ERROR: Solvent residue name cannot be an empty string."))
+    if 4 < len(solvent_resname) and not 0 == len(solvent_resname):
+        raise IllegalArgumentError(
+            "Bad solvent residue name '{}'. ".format(solvent_resname) +\
+                    "Solvent residue name must be 1-4 characters long."
+        )
     
     if config_in == None and not config_out == None:
-        sys.stderr.write("WARNING: Cannot write configuration file when no input "
-                         +"configuration file has been supplied.")
-        config_out = None
+        raise IllegalArgumentError(
+            "Output AMBER coordinates were requested but "\
+                "no input gromos coordinates were provided."
+        )
     
-    topology = Topology(topology_in)
+    try:
+        topology = Topology(topology_in)
+    except GromosFormatError as error:
+        raise GromosFormatError( "Bad input topology format: " + str(error))
     
     if not config_in == None:
-        config = Configuration(config_in)
+        try:
+            config = Configuration(config_in)
+        except GromosFormatError as error:
+            raise GromosFormatError(
+                "Bad coordinates file format: " + str(error)
+            )
         config.gather_molecules(topology)
         num_atoms = len(config.positions)
         num_solvent_molecules = ( num_atoms - len(topology.atoms) ) \
-                                * 1.0 / len(topology.solvent_atoms) 
+            * 1.0 / len(topology.solvent_atoms) 
         if not int(num_solvent_molecules) == num_solvent_molecules:
-            msg = "Number of solvent atoms ({}) not divisible by number of "\
-                    "number of atoms per solvent molecule ({})"
-            raise Exception(msg.format(num_solute,
-                                       len(topology.solvent_atoms)))
+            raise GromosFormatError(
+                "Mismatch between topology and coordinate files:"\
+                "The apparent number of solvent atoms in the coordinate"\
+                "file is {}. This is not divisible by the"\
+                "number of atoms per solvent molecule ({})".format(
+                    num_solute,
+                    len(topology.solvent_atoms)
+                )
+            )
+
         num_solvent_molecules = int(num_solvent_molecules)
     else:
         num_solvent_molecules = num_solvent
@@ -48,5 +61,4 @@ def gromos2amber( topology_in,
     
     if not config_out == None:
         AmberConfigurationWriter(config).write(config_out)
-    
 

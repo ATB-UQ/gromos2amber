@@ -15,22 +15,31 @@ class Configuration:
         elif "BOX" in blocks:
             box = blocks["BOX"]
             self.box_size = [ float(x)*nm for x in box[1].split() ]
+        else:
+            self.box_size = [0.0, ] * 3
 
-        posblock, cols, types  = ("POSITION",
-                                  [5,6,6,7,15,15,15],
-                                  (int,str,str,int,float,float,float),
-                                  ) if "POSITION" in blocks \
-                                          else ("POSITIONRED",
-                                                [15,15,15],
-                                                (float,float,float),
-                                                ) if "POSITIONRED" in blocks \
-                                                         else (None,None,None)
+        posblock, cols, types  = (
+            "POSITION",
+            [5, 6, 6, 7, 15, 15, 15],
+            (int, str, str, int, float, float, float),
+        ) if "POSITION" in blocks else (
+            "POSITIONRED",
+            [15, 15, 15],
+            (float, float, float),
+        ) if "POSITIONRED" in blocks else (None, None, None)
 
-        if None == posblock: raise(Exception("No position block found"))
-        columns = gf.parse_simple_columns(blocks[posblock],
-                                          cols,
-                                          types,
-                                          header = False)
+        if None == posblock:
+            raise GromosFormatError(
+                "No 'POSITION' or 'POSITIONRED' block found "\
+                    "in coordinate file"
+            )
+        columns = gf.parse_simple_columns(
+            blocks[posblock],
+            cols,
+            types,
+            header = False,
+        )
+
         x,y,z = columns[-3:]
 
         if "LATTICESHIFTS" in blocks:

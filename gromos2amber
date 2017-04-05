@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import sys
-from gromos2amber import gromos2amber
 import argparse
+from gromos2amber import gromos2amber, GromosFormatError, IllegalArgumentError
+
+exitstatus = 0
 
 parser = argparse.ArgumentParser(
         description="Convert Gromos simulation inputs to Amber inputs.",
@@ -42,8 +44,9 @@ parser.add_argument("--solvent_resname",
 args = parser.parse_args()
 
 if args.config_in == None and not args.config_out == None:
-    sys.stderr.write("WARNING: Cannot write configuration file when no input "
-                     +"configuration file has been supplied.")
+    sys.stderr.write(
+        "WARNING: Cannot write configuration file when no input "
+             +"configuration file has been supplied.")
     args.config_out = None
 
 cin = open(args.config_in ) if not args.config_in == None else None
@@ -53,11 +56,21 @@ try:
             config_in=cin, config_out = cout,
             solvent_resname = args.solvent_resname,
             num_solvent = args.num_solvent)
-except:
-    raise
+except GromosFormatError as error:
+    sys.stderr.write(
+        "There was a problem with the format of the input files.\n" \
+        "No valid topology or coordinate output could be produced.\n" \
+        "Details:\n" + str(error)
+    )
+    exitstatus = 1
+
+except IllegalArgumentError as error:
+    sys.stderr.write(str(error))
+    exitstatus = 1
+    
 finally:
     cin.close()  if not cin == None else None
     cout.close() if not cin == None else None
 
-exit(0)
+exit(exitstatus)
 
