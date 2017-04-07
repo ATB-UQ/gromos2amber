@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-from gromos2amber import gromos2amber, GromosFormatError, IllegalArgumentError
+from gromos2amber import convert, GromosFormatError, IllegalArgumentError
 
 exitstatus = 0
 
@@ -52,7 +52,7 @@ if args.config_in == None and not args.config_out == None:
 cin = open(args.config_in ) if not args.config_in == None else None
 cout = open(args.config_out, "w" ) if not args.config_out == None else None
 try:
-    gromos2amber(sys.stdin, sys.stdout,
+    convert(sys.stdin, sys.stdout,
             config_in=cin, config_out = cout,
             solvent_resname = args.solvent_resname,
             num_solvent = args.num_solvent)

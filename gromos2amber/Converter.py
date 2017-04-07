@@ -1,11 +1,11 @@
 
-from lib.Topology import Topology
-from lib.Configuration import Configuration
-from lib.AmberTopologyWriter import AmberTopologyWriter
-from lib.AmberConfigurationWriter import AmberConfigurationWriter
-from lib.Errors import GromosFormatError, IllegalArgumentError
+from .Topology import Topology
+from .Configuration import Configuration
+from .AmberTopologyWriter import AmberTopologyWriter
+from .AmberConfigurationWriter import AmberConfigurationWriter
+from .Errors import GromosFormatError, IllegalArgumentError
 
-def gromos2amber( topology_in,
+def convert( topology_in,
                   topology_out,
                   config_in = None, 
                   config_out = None, 
