@@ -13,7 +13,7 @@ def parse_blocks(io):
        else:
            continue
    if len(blocks) == 0:
-       raise FormatException("No blocks found in file.")
+       raise GromosFormatError("No blocks found in file.")
    return blocks
 
 def parse_simple_columns(block, widths, types, header = True):
