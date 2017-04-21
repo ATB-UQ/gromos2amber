@@ -23,7 +23,7 @@ def parse_simple_columns(block, widths, types, header = True):
         header_nrows = int(block[1])
         if nrows != header_nrows:
             message = "Block '{}' contains {} lines of data, expected {}"
-            raise FormatException(
+            raise GromosFormatError(
                 message.format(block[0].strip()),
                 nrows,
                 header_nrows,
@@ -38,7 +38,7 @@ def parse_simple_columns(block, widths, types, header = True):
     for r in range(nrows):
         if len(block[r+offset]) != line_width:
             message = "line {} of block is wrong length: \"{}\""
-            raise FormatException(
+            raise GromosFormatError(
                 message.format(r+2, block[1].strip(), block[r+2])
             )
     # read columns into lists
@@ -51,7 +51,7 @@ def parse_simple_columns(block, widths, types, header = True):
             for c in range(ncols)
         ]
     except ValueError:
-        raise FormatError(
+        raise GromosFormatError(
             "Block '{}' could not be parsed".format(block[0].strip())
         )
     return columns
@@ -60,13 +60,13 @@ def parse_array_block(block, width, typ):
     n = int(block[1])
     line = ''.join(block[2:-1]).replace('\n','')
     if len(line) != n*width:
-        raise FormatError(
+        raise GromosFormatError(
             "Block '{}' could not be parsed".format(block[0].strip())
         )
     try:
         result = [ typ(line[i*width:(i+1)*width]) for i in range(n)]
     except ValueError as error:
-        raise FormatError(
+        raise GromosFormatError(
             "Block '{}' could not be parsed. ".format(block[0].strip())+\
                 str(error)
         )
