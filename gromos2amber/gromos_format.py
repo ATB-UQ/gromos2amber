@@ -1,3 +1,4 @@
+from .Errors import GromosFormatError
 
 def parse_blocks(io):
    blocks = {}
