@@ -17,7 +17,9 @@ class GromosTopologyParser:
             else:
                 continue
         if len(self.blocks) == 0:
-            raise Exception("No blocks parsed.")
+            raise GromosFormatError(
+                "Invalid GROMOS topology file format. No blocks found."
+            )
 
     def getblock(self, blockname, checkheader = False):
         if not blockname in self.blocks:
