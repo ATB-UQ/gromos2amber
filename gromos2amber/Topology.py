@@ -41,10 +41,12 @@ class Topology:
         all_dihedrals = self.dihedrals_wH + self.dihedrals_woH
         _fix_14_exclusions(self.atoms, all_dihedrals)
         # Add dummy dihedrals to force 1-4 interactions where required
-        self.dihedrals_woH.extend(_extra_dihedrals(self.atoms,
-                                                   self.dihedrals_wH,
-                                                   self.dihedrals_woH,
-                                                   len(self.dihedral_types)-1))
+        self.dihedrals_woH.extend(_extra_dihedrals(
+            self.atoms,
+            self.dihedrals_wH,
+            self.dihedrals_woH,
+            len(self.dihedral_types)-1),
+        )
         self.is_periodic = True
         one_on_4_pi_eps0 = gromos.PHYSICALCONSTANTS()[0] *KILOJOULE*NANOMETRE
         self.charge_prefactor = sqrt(one_on_4_pi_eps0) #gromos
@@ -61,23 +63,28 @@ class Topology:
         atoms_per_solvent = len(self.solvent_atoms)
         num_solute_atoms = len(self.atoms)
 
-        self.atoms_per_molecule.extend([len(self.solvent_atoms)
-                                        for i in range(num_solvent_molecules)])
+        self.atoms_per_molecule.extend([
+            len(self.solvent_atoms)
+            for i in range(num_solvent_molecules)
+        ])
 
         self.num_solute_residues = len(self.residues)
 
-        self.residues.extend([ Residue(residue_name,
-                                    atoms_per_solvent*i + num_solute_atoms,
-                                    atoms_per_solvent)
-                                for i in range(num_solvent_molecules) ])
+        self.residues.extend([
+            Residue(residue_name,
+                atoms_per_solvent*i + num_solute_atoms,
+                atoms_per_solvent)
+            for i in range(num_solvent_molecules)
+        ])
 
         self.bond_types.extend(self.solvent_bond_types)
 
         all_solvent_atoms, all_solvent_bonds = _create_solvent(
-                self.solvent_atoms,
-                self.solvent_bonds,
-                num_solvent_molecules,
-                num_solute_atoms)
+            self.solvent_atoms,
+            self.solvent_bonds,
+            num_solvent_molecules,
+            num_solute_atoms
+        )
 
         self.atoms.extend(all_solvent_atoms)
         self.bonds_wH.extend(all_solvent_bonds)
@@ -91,10 +98,14 @@ def _read_solvent_bonds(gromos, num_bond_types):
     ii,jj,lengths = gromos.SOLVENTCONSTR()
     lengths = [ r0*NANOMETRE for r0 in lengths ]
     solvent_bond_types = [ BondType(0.0,r0) for r0 in set(lengths) ]
-    typecodes = { bondtype.r0 : index+num_bond_types
-                        for index,bondtype in enumerate(solvent_bond_types) }
-    solvent_bonds = [ Interaction([i-1,j-1], typecodes[r0])
-                        for i,j,r0 in zip(ii,jj,lengths) ]
+    typecodes = {
+        bondtype.r0 : index+num_bond_types
+        for index,bondtype in enumerate(solvent_bond_types)
+    }
+    solvent_bonds = [
+        Interaction([i-1,j-1], typecodes[r0])
+        for i,j,r0 in zip(ii,jj,lengths)
+    ]
     
     return solvent_bonds, solvent_bond_types
 
@@ -105,13 +116,17 @@ def _read_atoms_and_residues(gromos):
     atomindex, residue_number, name, typecode = data[0:4]
     mass, charge, _, exclusions, neigh14 = data[4: ]
     numatoms = len(atomindex)
-    atoms = [ Atom(name[i],
-                        typecode[i]-1, 
-                        mass[i],
-                        charge[i],
-                        [ e-1 for e in exclusions[i] ],
-                        [ n14-1 for n14 in neigh14[i] ])
-                    for i in range(numatoms) ]
+    atoms = [
+        Atom(
+            name[i],
+            typecode[i]-1, 
+            mass[i],
+            charge[i],
+            [ e-1 for e in exclusions[i] ],
+            [ n14-1 for n14 in neigh14[i] ],
+        )
+        for i in range(numatoms)
+    ]
     residue_names = gromos.RESNAMES()
     residues = []
     previous = -1
@@ -128,8 +143,10 @@ def _read_atom_types(gromos):
     names = gromos.ATOMTYPENAME()
     # Amber limits type names to 2 characters.
     # Use typecode instead when this is violated
-    return [ name[:4] if len(name.strip())>4 else name.strip()
-             for i,name in enumerate(names) ]
+    return [
+        name[:4] if len(name.strip())>4 else name.strip()
+        for i,name in enumerate(names)
+    ]
 
 def _read_bond_types(gromos):
     _,spring,length = gromos.BONDSTRETCHTYPE()
@@ -147,8 +164,10 @@ def _read_dihedral_types(gromos):
     spring, phase, multiplicity  = gromos.TORSDIHEDRALTYPE()
     unitk = KILOJOULE
     unitphi0 = DEGREE
-    return [ DihedralType(k*unitk,phi0*unitphi0,n)
-                for k,phi0,n in zip(spring, phase, multiplicity) ]
+    return [
+        DihedralType(k*unitk,phi0*unitphi0,n)
+        for k,phi0,n in zip(spring, phase, multiplicity)
+    ]
 
 def _read_improper_types(gromos):
     spring,angle = gromos.IMPDIHEDRALTYPE()
@@ -162,10 +181,10 @@ def _read_bonded_interaction(gromos_columns):
     cols = gromos_columns
     numcols = len(gromos_columns) - 1
     numrows = len(gromos_columns[0])
-    return [ Interaction([ cols[c][r]-1 for c in range(numcols) ],
-                         cols[-1][r]-1 )
-            for r in range(numrows)
-            ]
+    return [
+        Interaction([ cols[c][r]-1 for c in range(numcols) ], cols[-1][r]-1 )
+        for r in range(numrows)
+    ]
 
 def _read_lj_pair_types(gromos):
     typei, typej, c12, c6, c12_14, c6_14 = gromos.LJPARAMETERS()
@@ -175,10 +194,17 @@ def _read_lj_pair_types(gromos):
             raise Exception("bad pair ordering")
     unit6 = KILOJOULE*NANOMETRE**6
     unit12 = KILOJOULE*NANOMETRE**12
-    return [ LJPairType(typei[i]-1, typej[i]-1, c12[i]*unit12, c6[i]*unit6,
-                        c12_14[i]*unit12, c6_14[i]*unit6)
-                for i in range(numpairs)
-                ]
+    return [
+        LJPairType(
+            typei[i]-1,
+            typej[i]-1,
+            c12[i]*unit12,
+            c6[i]*unit6,
+            c12_14[i]*unit12,
+            c6_14[i]*unit6,
+        )
+        for i in range(numpairs)
+    ]
 
 def _read_solvent(gromos):
     _,name,typecode,mass,charge = gromos.SOLVENTATOM()
@@ -199,15 +225,16 @@ def _create_solvent(solvent_atoms, solvent_bonds,
     tc = [ atom.typecode for atom in solvent_atoms ]
     n = len(solvent_atoms)
     i0 = first_solvent_index
-    atoms = [ Atom(name[i%n],
-                   tc[i%n], 
-                   m[i%n],
-                   q[i%n],
-                   [ j+i0 for j in range(int(i/n)*n,int(i/n+1)*n)
-                       if not j==i ],
-                   []
-                   )
-              for i in range(num_molecules * n) ]
+    atoms = [
+        Atom(name[i%n],
+            tc[i%n], 
+            m[i%n],
+            q[i%n],
+            [ j+i0 for j in range(int(i/n)*n,int(i/n+1)*n) if not j==i ],
+            [],
+        )
+        for i in range(num_molecules * n)
+    ]
 
     bonds = []
     for mol in range(num_molecules):
@@ -221,8 +248,10 @@ def _create_solvent(solvent_atoms, solvent_bonds,
 def _read_atoms_per_solute_molecule(gromos):
     mol_last_index = gromos.SOLUTEMOLECULES()
     nummol = len(mol_last_index)
-    return [ mol_last_index[i] - (0 if i==0 else mol_last_index[i-1])
-            for i in range(nummol) ]
+    return [
+        mol_last_index[i] - (0 if i==0 else mol_last_index[i-1])
+        for i in range(nummol)
+    ]
 
 def _extra_dihedrals(atoms, dihedrals_wH, dihedrals_woH, dummy_typecode):
     extra = []
