@@ -60,7 +60,7 @@ except GromosFormatError as error:
     sys.stderr.write(
         "There was a problem with the format of the input files.\n" \
         "No valid topology or coordinate output could be produced.\n" \
-        "Details:\n" + str(error)
+        "Details:\n" + str(error) + "\n"
     )
     exitstatus = 1
 
