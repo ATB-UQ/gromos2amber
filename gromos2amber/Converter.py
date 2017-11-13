@@ -32,9 +32,13 @@ def convert( topology_in,
     if not config_in == None:
         try:
             config = Configuration(config_in)
+            if not config.boxtype in (0, 1):
+                raise GromosFormatError(
+                    "Only vaccum or rectangular boxes are supported."
+                )
         except GromosFormatError as error:
             raise GromosFormatError(
-                "Bad coordinates file format: " + str(error)
+                "There is a problem with the coordinate file: " + str(error)
             )
         config.gather_molecules(topology)
         num_atoms = len(config.positions)

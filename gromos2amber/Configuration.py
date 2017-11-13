@@ -11,9 +11,11 @@ class Configuration:
         ps = PICOSECONDS
         if "GENBOX" in blocks:
             genbox = blocks["GENBOX"]
+            self.boxtype = float(genbox[1])
             self.box_size = [ float(x)*nm for x in genbox[2].split() ]
         elif "BOX" in blocks:
             box = blocks["BOX"]
+            self.boxtype = 1 # assume rectangular box
             self.box_size = [ float(x)*nm for x in box[1].split() ]
         else:
             self.box_size = [0.0, ] * 3
