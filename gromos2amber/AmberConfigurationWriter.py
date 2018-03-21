@@ -17,5 +17,11 @@ class AmberConfigurationWriter:
             vvalues = []
             [ vvalues.extend(vel) for vel in velocities ]
             io.write(fortran_format("6f12.7", vvalues))
-        io.write(fortran_format("6f12.7", self.configuration.box_size))
+        if 0 != sum(self.configuration.box_angle):
+            box = self.configuration.box_size + self.configuration.box_angle
+        else:
+            box = self.configuration.box_size
+
+        io.write(fortran_format("6f12.7", box))
+
 

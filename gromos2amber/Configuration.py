@@ -13,12 +13,21 @@ class Configuration:
             genbox = blocks["GENBOX"]
             self.boxtype = float(genbox[1])
             self.box_size = [ float(x)*nm for x in genbox[2].split() ]
+            self.box_angle = [ float(x) for x in genbox[3].split() ]
+            self.box_rotation = [ float(x) for x in genbox[4].split() ]
+            self.box_origin = [ float(x)*nm for x in genbox[5].split() ]
         elif "BOX" in blocks:
             box = blocks["BOX"]
             self.boxtype = 1 # assume rectangular box
             self.box_size = [ float(x)*nm for x in box[1].split() ]
+            self.box_angle = [0.0, ] * 3
+            self.box_rotation = [0.0, ] * 3
+            self.box_origin = [0.0, ] * 3
         else:
             self.box_size = [0.0, ] * 3
+            self.box_angle = [0.0, ] * 3
+            self.box_rotation = [0.0, ] * 3
+            self.box_origin = [0.0, ] * 3
 
         posblock, cols, types  = (
             "POSITION",

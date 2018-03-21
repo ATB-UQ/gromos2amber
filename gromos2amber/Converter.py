@@ -32,15 +32,26 @@ def convert( topology_in,
     if not config_in == None:
         try:
             config = Configuration(config_in)
-            if not config.boxtype in (0, 1):
+            if not config.boxtype in (0, 1, 2):
                 raise GromosFormatError(
-                    "Only vaccum or rectangular boxes are supported."
+                    "Only vacuum, rectangular, and triclinic boxes are supported."
+                )
+            if not 0 == sum(config.box_rotation):
+                raise GromosFormatError(
+                    "Non-zero box rotation angles (phi, theta, psi) are not supported."
+                )
+            if not 0 == sum(config.box_origin):
+                raise GromosFormatError(
+                    "Non-zero box origin coordinates are not supported."
                 )
         except GromosFormatError as error:
             raise GromosFormatError(
                 "There is a problem with the coordinate file: " + str(error)
             )
-        config.gather_molecules(topology)
+        # Gather molecules by bonds if the box is rectangular
+        if config.boxtype == 1:
+            config.gather_molecules(topology)
+
         num_atoms = len(config.positions)
         num_solvent_molecules = ( num_atoms - len(topology.atoms) ) \
             * 1.0 / len(topology.solvent_atoms) 
