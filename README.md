@@ -24,3 +24,10 @@ optional arguments:
                           characters. (Default: SOL)
 ```
 
+## Example
+
+```
+gromos2amber --config_in positions.g96 \
+    --config-out positions.inpcrd \
+    < topology.top > topology.prmtop
+```
