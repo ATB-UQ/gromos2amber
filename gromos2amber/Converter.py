@@ -57,11 +57,11 @@ def convert( topology_in,
             * 1.0 / len(topology.solvent_atoms) 
         if not int(num_solvent_molecules) == num_solvent_molecules:
             raise GromosFormatError(
-                "Mismatch between topology and coordinate files:"\
-                "The apparent number of solvent atoms in the coordinate"\
-                "file is {}. This is not divisible by the"\
+                "Mismatch between topology and coordinate files: "\
+                "The apparent number of solvent atoms in the coordinate "\
+                "file is {}. This is not divisible by the "\
                 "number of atoms per solvent molecule ({})".format(
-                    num_solute,
+                    num_atoms - len(topology.atoms), \
                     len(topology.solvent_atoms)
                 )
             )
