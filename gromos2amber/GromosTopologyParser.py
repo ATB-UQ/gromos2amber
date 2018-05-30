@@ -23,8 +23,10 @@ class GromosTopologyParser:
 
     def getblock(self, blockname, checkheader = False):
         if not blockname in self.blocks:
+            blocknames = ", ".join(self.blocks.keys())
             raise GromosFormatError(
-                    "No block '"+blockname+"' in topology file."
+                "No block '"+blockname+"' in topology file. "+\
+                "Blocks present: "+blocknames+"."
             )
         block = self.blocks[blockname]
         if checkheader:
