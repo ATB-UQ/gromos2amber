@@ -310,6 +310,8 @@ class BondType:
 
 class LJPairType:
     def __init__(self, itype, jtype, c12, c6, c12_14, c6_14):
+        if c12_14 != 0 and c12 == 0:
+            c12 = 1.0e-99
         self.itype, self.jtype = itype, jtype
         self.c12, self.c6, self.c12_14, self.c6_14 = c12, c6, c12_14, c6_14
 
