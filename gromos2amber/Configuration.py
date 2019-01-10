@@ -24,6 +24,7 @@ class Configuration:
             self.box_rotation = [0.0, ] * 3
             self.box_origin = [0.0, ] * 3
         else:
+            self.boxtype = 0 # assume vacuum box
             self.box_size = [0.0, ] * 3
             self.box_angle = [0.0, ] * 3
             self.box_rotation = [0.0, ] * 3
