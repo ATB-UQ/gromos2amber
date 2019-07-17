@@ -1,4 +1,5 @@
 from . import gromos_format as gf
+from .Errors import GromosFormatError
 import sys
 
 NANOMETRE = 10.0
