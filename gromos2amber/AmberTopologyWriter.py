@@ -164,7 +164,7 @@ class AmberTopologyWriter:
         comment = NOCOMMENT
         order = 800
         numtypes = len(self.topology.atom_types)
-        irange = range(1, numtypes+1)
+        irange = list(range(1, numtypes+1))
         values = [ _nb_parm_index(i,j) for i in irange for j in irange ]
         return values, format_string, comment, order
     

@@ -107,9 +107,9 @@ class Configuration:
                         if abs(x[i][d]-x[j][d]) > 0.5*box[d]:
                             num_broken_bond_dims += 1
                             if x[i][d] > x[j][d]:
-                                if x[j][d]>box[d]: raise(Exception("stuck in loop"))
+                                if x[j][d]>box[d]: raise Exception
                                 x[j][d] += box[d]
                             else:
-                                if x[i][d]>box[d]: raise(Exception("stuck in loop"))
+                                if x[i][d]>box[d]: raise Exception
                                 x[i][d] += box[d]
 
