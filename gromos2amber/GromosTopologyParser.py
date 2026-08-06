@@ -88,12 +88,14 @@ class GromosTopologyParser:
                 charge_group_code[i] = int(fields[6])
                 num_exclusions = int(fields[7])
 
-                exclusions[i] = list(map(int, block[l][sum(fieldwidths):-1].split()))
-                while len(exclusions) < num_exclusions:
+                exclusions[i] = list(map(int, block[l][sum(fieldwidths):].split()))
+                while len(exclusions[i]) < num_exclusions:
                     l += 1
                     if len(block[l]) < start_exclusions + 1:
                         raise GromosFormatError(shortline.format(l, block[l]))
-                    exclusions[i].extend(list(map(int, block[l][start_exclusions:-1])))
+                    exclusions[i].extend(
+                        map(int, block[l][start_exclusions:].split())
+                    )
 
                 # assume space delimited (compatible with gromos 1.3.1 )
                 l += 1
