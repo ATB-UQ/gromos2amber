@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gromos2amber"
+description = "Convert GROMOS topology and coordinate files to AMBER format"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = ["gromos2amber"]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
