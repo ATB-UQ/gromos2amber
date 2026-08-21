@@ -312,6 +312,13 @@ class AmberTopologyWriter:
         return values, format_string, comment, order
     
     def EXCLUDED_ATOMS_LIST(self):
+        # Each excluded pair must appear ONCE, on the lower-numbered atom; Topology
+        # canonicalises this (_canonicalise_exclusions). pmemd 24 subtracts the
+        # excluded-pair reciprocal-space term once per listing, so a pair recorded on both
+        # partners is corrected twice -- with duplicated SPC exclusions that was ~+36
+        # kcal/mol per water on EELEC, silently (forces on SHAKE-constrained pairs are
+        # absorbed by the constraint, so the dynamics still look healthy). pmemd 14/18
+        # deduplicated, which is why topologies written before this fix ran correctly then.
         format_string = '10i8'
         comment = NOCOMMENT
         order = 2900

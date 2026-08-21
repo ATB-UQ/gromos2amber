@@ -40,6 +40,7 @@ class Topology:
         # Marks dihedrals for which 1-4 interactions must be excluded
         all_dihedrals = self.dihedrals_wH + self.dihedrals_woH
         _fix_14_exclusions(self.atoms, all_dihedrals)
+        _canonicalise_exclusions(self.atoms)
         # Add dummy dihedrals to force 1-4 interactions where required
         self.dihedrals_woH.extend(_extra_dihedrals(
             self.atoms,
@@ -217,6 +218,25 @@ def _read_solvent(gromos):
               for i in range(n) ]
     return atoms
 
+def _canonicalise_exclusions(atoms):
+    """Store each excluded pair exactly once, on the lower-indexed atom.
+
+    AMBER requires this; a pair listed on both partners is applied twice by pmemd 24.
+    Symmetrise first so an exclusion recorded only on the higher-indexed atom (which a
+    GROMOS topology may do for a cross-link) survives as a forward entry rather than
+    being dropped.
+    """
+    forward = [set() for _ in atoms]
+    for (i, atom) in enumerate(atoms):
+        for j in atom.exclusions:
+            if j == i:
+                continue
+            (lo, hi) = (i, j) if i < j else (j, i)
+            forward[lo].add(hi)
+    for (i, atom) in enumerate(atoms):
+        atom.exclusions = sorted(forward[i])
+
+
 def _create_solvent(solvent_atoms, solvent_bonds,
                     num_molecules, first_solvent_index):
     name = [ atom.name for atom in solvent_atoms ]
@@ -230,7 +250,15 @@ def _create_solvent(solvent_atoms, solvent_bonds,
             tc[i%n], 
             m[i%n],
             q[i%n],
-            [ j+i0 for j in range(int(i/n)*n,int(i/n+1)*n) if not j==i ],
+            # Only partners with a HIGHER index: AMBER's EXCLUDED_ATOMS_LIST stores each
+            # excluded pair once, on the lower-numbered atom. Listing every other atom in
+            # the molecule (`if not j==i`) recorded each pair twice -- e.g. SPC water gave
+            # OW:[HW1,HW2] HW1:[OW,HW2] HW2:[OW,HW1] instead of OW:[HW1,HW2] HW1:[HW2].
+            # pmemd <= 18 tolerated that; pmemd 24 applies the excluded-pair reciprocal-space
+            # correction once per listing, so every solvent pair was corrected twice and
+            # EELEC came out badly positive (+36 kcal/mol per water). See the note in
+            # AmberTopologyWriter.EXCLUDED_ATOMS_LIST.
+            [ j+i0 for j in range(int(i/n)*n,int(i/n+1)*n) if j > i ],
             [],
         )
         for i in range(num_molecules * n)
