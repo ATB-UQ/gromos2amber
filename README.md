@@ -31,7 +31,7 @@ count is taken from it, otherwise `--num_solvent` solvent molecules are included
 
 `gromos2amber/`: `Converter.convert` (entry), `GromosTopologyParser`, `Topology`, `Configuration`,
 `AmberTopologyWriter`, `AmberConfigurationWriter`, `fortran_format`, `gromos_format`, `Errors`.
-Note GROMOS quartic bond/angle terms are refitted to harmonic on output.
+Note the converter does not refit anything: it reads the *harmonic* force-constant columns (CHB, CHT) of the GROMOS topology and writes `0.5*k` converted to kcal/mol and Angstrom; the quartic columns are ignored. `LJEXCEPTIONS` is parsed but not applied.
 
 ## Platform fit
 
@@ -43,5 +43,8 @@ Note GROMOS quartic bond/angle terms are refitted to harmonic on output.
 
 ## Tests
 
-`tests/` is empty in this checkout (a tracked gitlink with no content), so there are no tests.
-Validate a change by converting a molecule and loading the result with AMBER/ParmEd.
+`tests/test_gromos2amber.py` (pytest; run with the checkout on `PYTHONPATH`) covers the unit
+constants, Fortran formatting, block parsing, the once-per-pair exclusion rule, solvent
+exclusions and, if `ncmas_benchmarks/systems/ti_8040/bench.top` exists, a real conversion's
+pointers. It does not check energies: validate a change to the physics by converting a molecule
+and comparing a single-point energy in AMBER/ParmEd against GROMOS.
