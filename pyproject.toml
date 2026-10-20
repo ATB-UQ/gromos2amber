@@ -9,6 +9,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.9"
 dynamic = ["version"]
+dependencies = ["chemistry_helpers @ git+https://github.com/ATB-UQ/chemistry_helpers.git@master"]
 
 [tool.setuptools]
 packages = ["gromos2amber"]

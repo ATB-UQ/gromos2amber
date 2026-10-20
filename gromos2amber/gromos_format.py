@@ -1,21 +1,18 @@
 from .Errors import GromosFormatError
+from chemistry_helpers.gromos_blocks import GromosBlockError, blocks_dict
 
-def parse_blocks(io):
-   blocks = {}
-   lines = [line for line in io.readlines()
-               if line.strip() and not line[0] == '#' ]
-   start = 0
-   for l,line in enumerate(lines):
-       if l == start:
-           blockname = line.strip()
-       elif line == "END\n":
-           blocks[blockname] = lines[start:l+1]
-           start = l+1
-       else:
-           continue
-   if len(blocks) == 0:
-       raise GromosFormatError("No blocks found in file.")
-   return blocks
+
+def parse_blocks(io, empty_message="No blocks found in file."):
+   """{name: lines}, each list framed as the callers index it: name line, value lines,
+   "END\\n" (every line newline-terminated, fixed-width lines kept unstripped)."""
+   try:
+       split = blocks_dict(io.read(), on_duplicate="last", strip=False)
+   except GromosBlockError as error:
+       raise GromosFormatError(str(error))
+   if not split:
+       raise GromosFormatError(empty_message)
+   return {name: [name + "\n"] + [line + "\n" for line in lines] + ["END\n"]
+           for name, lines in split.items()}
 
 def parse_simple_columns(block, widths, types, header = True):
     offset = 2 if header else 1

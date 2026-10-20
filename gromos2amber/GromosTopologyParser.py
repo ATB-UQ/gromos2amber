@@ -1,25 +1,11 @@
-from .gromos_format import parse_simple_columns, parse_array_block
+from .gromos_format import parse_simple_columns, parse_array_block, parse_blocks
 from .Errors import GromosFormatError
 
 class GromosTopologyParser:
 
     def __init__(self, io):
-        self.blocks = {}
-        lines = [line for line in io.readlines()
-                    if line.strip() and not line[0] == '#' ]
-        start = 0
-        for l,line in enumerate(lines):
-            if l == start:
-                blockname = line.strip()
-            elif line == "END\n":
-                self.blocks[blockname] = lines[start:l+1]
-                start = l+1
-            else:
-                continue
-        if len(self.blocks) == 0:
-            raise GromosFormatError(
-                "Invalid GROMOS topology file format. No blocks found."
-            )
+        self.blocks = parse_blocks(
+            io, "Invalid GROMOS topology file format. No blocks found.")
 
     def getblock(self, blockname, checkheader = False):
         if not blockname in self.blocks:
