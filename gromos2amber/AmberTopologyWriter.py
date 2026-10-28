@@ -457,7 +457,8 @@ class AmberTopologyWriter:
     
     def CHARMM_IMPROPER_PHASE(self):
         format_string = '5e16.8'
-        comment = 'In degrees'
+        # Radians (Topology stores angles in radians), as pmemd and ParmEd expect.
+        comment = 'psi: radians'
         order = 4600
         values = [ improper.xi0 for improper in self.topology.improper_types ]
         return values, format_string, comment, order
