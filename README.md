@@ -31,7 +31,7 @@ count is taken from it, otherwise `--num_solvent` solvent molecules are included
 
 `gromos2amber/`: `Converter.convert` (entry), `GromosTopologyParser`, `Topology`, `Configuration`,
 `AmberTopologyWriter`, `AmberConfigurationWriter`, `fortran_format`, `gromos_format`, `Errors`.
-Note the converter does not refit anything: it reads the *harmonic* force-constant columns (CHB, CHT) of the GROMOS topology and writes `0.5*k` converted to kcal/mol and Angstrom; the quartic columns are ignored. `LJEXCEPTIONS` is parsed but not applied.
+Note the converter does not refit anything: it reads the *harmonic* force-constant columns (CHB, CHT) of the GROMOS topology and writes `0.5*k` converted to kcal/mol and Angstrom; the quartic columns are ignored. `LJEXCEPTIONS` is parsed but not applied, so a topology with any entries in it is refused (`UnsupportedTopologyError`, a `GromosFormatError`); an empty block converts.
 
 ## Platform fit
 
@@ -43,7 +43,7 @@ Note the converter does not refit anything: it reads the *harmonic* force-consta
 
 ## Tests
 
-`tests/test_gromos2amber.py` (pytest; run with the checkout on `PYTHONPATH`) covers the unit
+`unit_tests/test_gromos2amber.py` (pytest; run with the checkout on `PYTHONPATH`) covers the unit
 constants, Fortran formatting, block parsing, the once-per-pair exclusion rule, solvent
 exclusions and, if `ncmas_benchmarks/systems/ti_8040/bench.top` exists, a real conversion's
 pointers. It does not check energies: validate a change to the physics by converting a molecule

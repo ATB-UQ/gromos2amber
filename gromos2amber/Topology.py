@@ -1,4 +1,5 @@
 from .GromosTopologyParser import GromosTopologyParser
+from .Errors import UnsupportedTopologyError
 from math import sqrt
 
 KILOJOULE = 1.0/4.184 # kCal
@@ -12,6 +13,7 @@ class Topology:
 
     def __init__(self, io):
         gromos = GromosTopologyParser(io)
+        _refuse_unconverted_blocks(gromos)
 
         self.title = gromos.TITLE()
 
@@ -94,6 +96,27 @@ class Topology:
     def get_title(self): return self.title.replace('\n','_')
 
 ##### End of Topology class #####
+
+# Blocks that are parsed (or merely present) but whose interactions the
+# writer does not carry into the prmtop. Converting a topology with entries in
+# any of them would silently drop terms, so refuse it instead.
+_UNCONVERTED_BLOCKS = ("LJEXCEPTIONS",)
+
+def _refuse_unconverted_blocks(gromos):
+    for name in _UNCONVERTED_BLOCKS:
+        block = gromos.blocks.get(name)
+        if block is None or len(block) < 2:
+            continue
+        try:
+            count = int(block[1].split()[0])
+        except (IndexError, ValueError):
+            count = len(block) - 3
+        if count != 0 or len(block) > 3:
+            raise UnsupportedTopologyError(
+                "The topology has {} entries in its {} block, which this "
+                "converter does not apply; it refuses the topology rather "
+                "than drop them.".format(max(count, len(block) - 3), name)
+            )
 
 def _read_solvent_bonds(gromos, num_bond_types):
     ii,jj,lengths = gromos.SOLVENTCONSTR()

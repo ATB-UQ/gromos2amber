@@ -3,7 +3,7 @@ from .Topology import Topology
 from .Configuration import Configuration
 from .AmberTopologyWriter import AmberTopologyWriter
 from .AmberConfigurationWriter import AmberConfigurationWriter
-from .Errors import GromosFormatError, IllegalArgumentError
+from .Errors import GromosFormatError, IllegalArgumentError, UnsupportedTopologyError
 
 def convert( topology_in,
                   topology_out,
@@ -26,6 +26,8 @@ def convert( topology_in,
     
     try:
         topology = Topology(topology_in)
+    except UnsupportedTopologyError:
+        raise
     except GromosFormatError as error:
         raise GromosFormatError( "Bad input topology format: " + str(error))
     

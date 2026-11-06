@@ -93,3 +93,41 @@ def test_real_topology_converts_with_expected_pointers():
     # GROMOS CHB (kJ mol-1 nm-2) -> kcal mol-1 A-2 and the AMBER 1/2 convention:
     k_first_bond = float(lines[lines.index("%FLAG BOND_FORCE_CONSTANT") + 2].split()[0])
     assert 100 < k_first_bond < 1500
+
+
+def _with_ljexceptions(text, rows):
+    """Replace (or append) the LJEXCEPTIONS block of a topology text."""
+    block = "LJEXCEPTIONS\n# NEX\n{:>5d}\n".format(len(rows))
+    block += "".join("{:>5d}{:>5d}{:>14.6e}{:>14.6e}\n".format(*r) for r in rows)
+    block += "END\n"
+    lines = text.splitlines(keepends=True)
+    if "LJEXCEPTIONS\n" in lines:
+        start = lines.index("LJEXCEPTIONS\n")
+        end = lines.index("END\n", start)
+        lines[start:end + 1] = [block]
+    else:
+        lines.append(block)
+    return "".join(lines)
+
+
+@pytest.mark.skipif(not os.path.exists(BENCH_TOP), reason="ncmas bench.top not present")
+def test_ljexceptions_entries_are_refused():
+    # LJEXCEPTIONS is parsed but not applied: converting would drop the
+    # special pair interactions silently, so the topology is refused.
+    from gromos2amber import UnsupportedTopologyError
+    with open(BENCH_TOP) as fh:
+        text = _with_ljexceptions(fh.read(), [(1, 5, 1.0e-6, 2.0e-3)])
+    with pytest.raises(UnsupportedTopologyError, match="LJEXCEPTIONS"):
+        convert(io.StringIO(text), io.StringIO(), num_solvent=0)
+    # and the website's existing GromosFormatError handler still catches it
+    with pytest.raises(GromosFormatError):
+        convert(io.StringIO(text), io.StringIO(), num_solvent=0)
+
+
+@pytest.mark.skipif(not os.path.exists(BENCH_TOP), reason="ncmas bench.top not present")
+def test_empty_ljexceptions_block_converts():
+    with open(BENCH_TOP) as fh:
+        text = _with_ljexceptions(fh.read(), [])
+    out = io.StringIO()
+    convert(io.StringIO(text), out, num_solvent=0)
+    assert out.getvalue().startswith("%VERSION")

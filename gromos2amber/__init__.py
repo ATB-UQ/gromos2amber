@@ -1,4 +1,4 @@
  
 from .Converter import convert
-from .Errors import GromosFormatError, IllegalArgumentError
+from .Errors import GromosFormatError, IllegalArgumentError, UnsupportedTopologyError
 
