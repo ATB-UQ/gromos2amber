@@ -37,7 +37,7 @@ Note the converter does not refit anything: it reads the *harmonic* force-consta
 
 - Used by: `website` (`site_pages/system_topology_download.py`), `gromos_job_wrapper`
   (`gromos2amber` job option, `deployment/gadi_pmemd.sh` / Setonix pmemd shim),
-  `atb_condensed_phase` (`engines/amber.py`), `ncmas_benchmarks` (`scripts/build_inputs.py`).
+  `atb_condensed_phase` (`engines/amber.py`) (and the NCMAS 2027 benchmarks, `ncmas_benchmarks`, retired 2026-11-26).
 - Not related to `amber_converter` (an unfinished GROMACS/ParmEd prototype; see its README).
 - `siblings.txt` tracks branch `pip-installable-packaging`; version in `VERSION` (1.2.1).
 
@@ -45,6 +45,6 @@ Note the converter does not refit anything: it reads the *harmonic* force-consta
 
 `tests/test_gromos2amber.py` (pytest; run with the checkout on `PYTHONPATH`) covers the unit
 constants, Fortran formatting, block parsing, the once-per-pair exclusion rule, solvent
-exclusions and, if `ncmas_benchmarks/systems/ti_8040/bench.top` exists, a real conversion's
-pointers. It does not check energies: validate a change to the physics by converting a molecule
+exclusions and a real conversion's pointers (`unit_tests/data/ti_8040_bench.top`, a 44-atom ATB
+topology). It does not check energies: validate a change to the physics by converting a molecule
 and comparing a single-point energy in AMBER/ParmEd against GROMOS.

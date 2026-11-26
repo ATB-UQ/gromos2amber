@@ -12,7 +12,8 @@ from gromos2amber.Topology import (
     _canonicalise_exclusions, _create_solvent,
 )
 
-BENCH_TOP = "/home/atb/ATB/ncmas_benchmarks/systems/ti_8040/bench.top"
+# A real 44-atom ATB topology (molid 8040), from the retired ncmas_benchmarks TI system.
+BENCH_TOP = os.path.join(os.path.dirname(__file__), "data", "ti_8040_bench.top")
 
 
 def test_unit_constants():
@@ -80,7 +81,6 @@ def test_coordinates_out_without_in_rejected():
         convert(io.StringIO(""), io.StringIO(), config_out=io.StringIO())
 
 
-@pytest.mark.skipif(not os.path.exists(BENCH_TOP), reason="ncmas bench.top not present")
 def test_real_topology_converts_with_expected_pointers():
     out = io.StringIO()
     with open(BENCH_TOP) as fh:
